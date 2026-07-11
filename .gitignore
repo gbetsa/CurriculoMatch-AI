@@ -1,0 +1,27 @@
+# Ambientes virtuais
+venv/
+env/
+.env
+.venv/
+env.bak/
+venv.bak/
+
+# Chaves e segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# LangGraph / LangChain temporários
+output/
+*.log
+
+# Ferramentas e editores
+.vscode/
+.idea/
+.DS_Store
