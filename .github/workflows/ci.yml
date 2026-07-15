@@ -34,3 +34,7 @@ jobs:
     - name: Check formatting with black
       run: |
         black --check .
+        
+    - name: Run unit tests
+      run: |
+        python -m pytest tests/
