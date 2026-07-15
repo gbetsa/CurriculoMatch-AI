@@ -7,10 +7,14 @@ class CurriculumData(BaseModel):
     email: str = Field(description="Endereço de e-mail do candidato")
     telefone: str = Field(description="Telefone de contato do candidato")
     habilidades: List[str] = Field(
-        description="Lista de habilidades técnicas e ferramentas"
+        description="Lista de TODAS as hard skills, competências, softwares e linguagens listadas explicitamente nas seções de 'Habilidades', 'Stacks' ou 'Skills'."
+    )
+    ferramentas_projetos_experiencias: List[str] = Field(
+        default_factory=list,
+        description="Lista exaustiva de TODAS as tecnologias, bibliotecas (ex: Vite, Express), ORMs (ex: Sequelize) e ferramentas citadas DENTRO dos textos descritivos das Experiências e Projetos Realizados.",
     )
     experiencias: List[str] = Field(
-        description="Resumo dos cargos e empresas em que o candidato já trabalhou"
+        description="Lista detalhada de cargos, empresas, atividades e PROJETOS, mantendo as tecnologias e ferramentas citadas no texto original."
     )
     formacao: str = Field(description="Nível acadêmico, graduações ou cursos listados")
     idiomas: List[str] = Field(

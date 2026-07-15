@@ -11,7 +11,8 @@ Regras de Extração:
 1. Respeite fielmente os dados originais do texto base.
 2. Preencha TODOS os campos do modelo de dados solicitado.
 3. Não invente ou presuma informações que não estão explicitamente no texto.
-4. Caso uma informação falte, retorne uma string vazia ("") ou array vazio ([]).""",
+4. Caso uma informação falte, retorne uma string vazia ("") ou array vazio ([]).
+5. Preste MUITA atenção à extração separada: coloque as habilidades principais no campo "habilidades" e faça uma varredura profunda nas descrições de experiências/projetos para popular o campo "ferramentas_projetos_experiencias". Não omita NENHUMA tecnologia citada.""",
         ),
         (
             "user",
