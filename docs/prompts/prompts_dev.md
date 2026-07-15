@@ -268,3 +268,25 @@ Criar o ponto de entrada central da aplicação (`main.py`) expondo uma CLI func
 - Logs em 6 etapas com emojis para feedback visual do pipeline ao usuário.
 - Verificação do estado final do grafo (`error_message`) com `sys.exit(1)` em caso de falha.
 - Código formatado via Black/Flake8. PR #15 aberto e Issue #7 fechada.
+
+---
+
+### Qualidade - Auditoria Pré-Bloco 8 e Correções
+**Data:** 15 de Julho de 2026, 15:45
+
+**Objetivo:**
+Realizar uma auditoria formal do projeto verificando a conformidade de todos os entregáveis com a documentação em `/docs` antes de iniciar os testes finais (Bloco 8).
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Antes de iniciarmos o Bloco 8 (Testes e Validação), quero uma auditoria do projeto, tudo esta registrado em /docs. Quero uma validação se esta tudo de acordo."
+> *(Ação seguinte)*: "sim" (confirmação para corrigir os pontos de atenção identificados)
+
+**Padrão de Prompting:** Quality Assurance / Validation-driven
+> O usuário solicitou um processo formal de auditoria, pedindo à IA que comparasse o estado atual do código e do repositório com cada documento de referência em `/docs` antes de avançar para os testes.
+
+**Resultado e Ação (Saída da IA):**
+- Lidos e cruzados todos os documentos em `/docs`: `architecture.md`, `gitflow.md`, `task-completion.md`, `prompts.md`, `tasks.md`, `specs/*.md`.
+- Verificados via `gh` os estados de todas as 7 issues e 7 PRs no GitHub.
+- Auditoria completa gerada em `walkthrough.md` (artefato interno) cobrindo: estrutura de arquivos, conformidade arquitetural, GitFlow, Task Completion, log de prompts e CI/CD.
+- **Resultado geral: ✅ APROVADO** com 3 pontos menores identificados.
+- Correções aplicadas em `chore(audit)`: remoção de `pathlib` do `requirements.txt`, adição de `protection.json` e `pr_body.txt` ao `.gitignore`, remoção do `protection.json` do tracking do git e atualização do `docs/tasks.md` com os checks `[x]` dos blocos concluídos.
