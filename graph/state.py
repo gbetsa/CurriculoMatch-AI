@@ -11,7 +11,7 @@ class CurriculumData(BaseModel):
     )
     ferramentas_projetos_experiencias: List[str] = Field(
         default_factory=list,
-        description="Lista exaustiva de TODAS as tecnologias, bibliotecas (ex: Vite, Express), ORMs (ex: Sequelize) e ferramentas citadas DENTRO dos textos descritivos das Experiências e Projetos Realizados."
+        description="Lista exaustiva de TODAS as tecnologias, bibliotecas (ex: Vite, Express), ORMs (ex: Sequelize) e ferramentas citadas DENTRO dos textos descritivos das Experiências e Projetos Realizados.",
     )
     experiencias: List[str] = Field(
         description="Lista detalhada de cargos, empresas, atividades e PROJETOS, mantendo as tecnologias e ferramentas citadas no texto original."
