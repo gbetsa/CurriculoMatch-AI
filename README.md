@@ -99,3 +99,11 @@ Requisitos:
 * **PDFs como Imagens:** A ferramenta `PyMuPDF` não realiza OCR (Optical Character Recognition). Portanto, currículos exportados como imagens estáticas sem texto indexável não serão lidos adequadamente.
 * **Limite de Janela de Contexto:** Embora robusto, currículos exageradamente grandes (mais de 10 páginas) combinados com vagas muito longas podem estourar a janela de contexto de modelos abertos.
 * **Falsos-Positivos Linguísticos:** Se um candidato mentir ou listar dezenas de bibliotecas em uma seção de "tags de SEO" no currículo, a IA pode pontuá-lo de forma irrealisticamente positiva.
+
+---
+
+## 9. Documentação e Histórico de Prompts
+Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
+* [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
+
+Este diário garante total rastreabilidade das decisões técnicas e da construção guiada por IA do CurriculoMatch.
