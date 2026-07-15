@@ -464,3 +464,24 @@ Fixar as versões exatas das dependências no `requirements.txt` para garantir r
 - Criada branch `feature/11-audit-improvements` a partir de `develop` para conter as correções do Bloco 11.
 - Commit realizado seguindo Conventional Commits com corpo estendido detalhando todas as alterações.
 - Branch publicada no GitHub remoto.
+
+---
+
+### Adição de Testes Unitários com pytest
+**Data:** 15 de Julho de 2026, 17:23
+
+**Objetivo:**
+Mesmo não sendo um requisito formal do Mini-Projeto, o usuário quis ir além e adicionar uma infraestrutura de testes unitários para o pipeline, ferramentas e nós do LangGraph.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "crie uma branch para realizamos teste unitarios. mesmo não pedindo nos requisitos do projeto, vamos incluir"
+
+**Padrão de Prompting:** Initiative / Quality Assurance
+> O usuário demonstrou proatividade em inserir QA (Quality Assurance) no código base, pedindo o setup da infraestrutura de CI/CD.
+
+**Resultado e Ação (Saída da IA):**
+- Criação de plano e branch dedicada `feature/13-unit-tests`.
+- Atualização do `requirements.txt` com `pytest` e `pytest-mock`.
+- Modificação no `ci.yml` do GitHub Actions para rodar a suíte `pytest tests/` no CI.
+- Criação de mocks robustos (como `RunnableLambda`) simulando o comportamento condicional da LLM para extração da RegEx em testes unitários.
+- 6 testes isolados escritos com sucesso nas rotinas de validação de arquivos (`read_curriculum`, `read_job`) e geração (`save_report`).
