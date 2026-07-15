@@ -57,3 +57,43 @@ Criar/atualizar o arquivo de registro cronológico (prompts_dev.md) com as entra
 
 **Resultado e Ação (Saída da IA):**
 Atualização do arquivo `/docs/prompts/prompts_dev.md` aplicando o template obrigatório para todas as interações anteriores e a atual.
+
+---
+
+### Implementação - Configuração do Ambiente e Diretórios (Bloco 1)
+**Data:** 15 de Julho de 2026, 14:55
+
+**Objetivo:**
+Iniciar a execução das especificações do Bloco 1 (01_setup.md), criar uma nova branch seguindo o GitFlow, atualizar o status da tarefa no Kanban para "In Progress", e prosseguir até a conclusão (commit, PR e fechamento da issue).
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Proximo passo deve ser iniciarmos a specs 01_setup.md. Para isso inicie uma nova branch com base no arquivo gitflow.md. Na quadro kanban a task deve ser gerenciada por colunas, no momento estamos em "Backlog", mas temos "Ready", "In Progress", "In Review" e "Done"."
+
+**Padrão de Prompting:** Workflow / Process-oriented
+> Instruiu a IA a seguir um fluxo de trabalho específico estabelecido em documentos paralelos (`gitflow.md` e regras de integração com GitHub Projects), definindo não apenas o código a ser gerado, mas o processo operacional e de versionamento.
+
+**Resultado e Ação (Saída da IA):**
+- Verificado status do Git e feito checkout para `develop`.
+- Criada a branch `feature/01-setup`.
+- Item do projeto atualizado para a coluna "In progress" usando a CLI.
+- Criados ambiente virtual, arquivos (`requirements.txt`, `.env.example`) e diretórios vazios estruturais (`input`, `output`, `graph`, `tools`, `prompts`) com marcadores `.gitkeep`.
+- As alterações foram commitadas seguindo o Conventional Commits, o Pull Request foi aberto para a branch `develop`, e a Issue #1 foi devidamente atualizada com um comentário detalhado (asignada para `gbetsa`) e então concluída.
+
+---
+
+### Workflow - Regra de Documentação Rígida em Commits e PRs
+**Data:** 15 de Julho de 2026, 15:00
+
+**Objetivo:**
+Melhorar a qualidade da documentação do versionamento. O usuário apontou que as mensagens de commit e o corpo dos Pull Requests estavam excessivamente simplistas.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ótimo, apenas uma coisa devemos melhorar no fluxo. Commit 5a4d54a [...] O commit e PR ficou muito simples, tudo que desenvolvido, deve estar documentado de forma rigida."
+
+**Padrão de Prompting:** Feedback / Constraint-based
+> O usuário forneceu um feedback corretivo sobre uma saída anterior, impondo uma nova restrição (constraint) de qualidade que deve ser aplicada a todas as futuras interações do GitFlow.
+
+**Resultado e Ação (Saída da IA):**
+- A restrição foi assimilada. A partir do Bloco 2, todos os commits conterão corpo estendido e detalhado.
+- Os Pull Requests passarão a incluir o detalhamento técnico profundo de tudo que foi implementado, os arquivos tocados e os critérios de aceite cumpridos.
+- Este registro foi adicionado ao log de prompts (`prompts_dev.md`).
