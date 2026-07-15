@@ -245,3 +245,26 @@ Corrigir a omissão do registro de interação do Bloco 6 no arquivo de log hist
 - Verificado o arquivo `prompts_dev.md` e confirmada a ausência do registro do Bloco 6.
 - Adicionados dois registros: a interação principal do Bloco 6 e esta correção.
 - Commit atualizado na branch `feature/06-workflow` com o arquivo de log corrigido.
+
+---
+
+### Implementação - Ponto de Entrada / Entrypoint (Bloco 7)
+**Data:** 15 de Julho de 2026, 15:40
+
+**Objetivo:**
+Criar o ponto de entrada central da aplicação (`main.py`) expondo uma CLI funcional, carregando as variáveis de ambiente com segurança e exibindo logs informativos ao longo do pipeline de execução.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Podemos seguir para o Bloco 7 (main.py — Ponto de Entrada)"
+
+**Padrão de Prompting:** Task Execution / Delegation
+> O usuário autorizou o avanço sequencial para o Bloco 7 seguindo o roadmap do projeto.
+
+**Resultado e Ação (Saída da IA):**
+- Criada branch `feature/07-entrypoint` a partir de `develop` atualizado.
+- Implementado `main.py` com `argparse` expondo `--curriculo` e `--vaga` com valores padrão para o Bloco 8.
+- Carregamento de `.env` via `load_dotenv()` com verificação explícita de `GROQ_API_KEY` antes de qualquer outra operação.
+- Importação tardia de `app` (após `.env` carregado) para evitar falha na instanciação do `ChatGroq`.
+- Logs em 6 etapas com emojis para feedback visual do pipeline ao usuário.
+- Verificação do estado final do grafo (`error_message`) com `sys.exit(1)` em caso de falha.
+- Código formatado via Black/Flake8. PR #15 aberto e Issue #7 fechada.
