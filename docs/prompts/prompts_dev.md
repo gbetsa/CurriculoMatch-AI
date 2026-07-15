@@ -202,3 +202,46 @@ Executar as especificações do Bloco 5, orquestrando as "ferramentas" criadas n
 - Instanciado `ChatGroq` e integrado `with_structured_output(ExtractedInformation)`.
 - Escritas 7 funções de processamento (`validate_inputs`, `read_curriculum_node`, `read_job_node`, `extract_information`, `analyze_match`, `generate_report`, `save_report_node`) gerenciando a leitura e salvamento do AgentState e tratamento estrito de exceções (try/except).
 - Código formatado via Black/Flake8. PR #13 aberto e Issue #5 marcada como completa.
+
+---
+
+### Implementação - Orquestração / Workflow (Bloco 6)
+**Data:** 15 de Julho de 2026, 15:36
+
+**Objetivo:**
+Implementar o grafo de estados do LangGraph (`StateGraph`) conectando todos os nós por arestas sequenciais e condicionais, garantindo um fluxo de execução robusto com tratamento de falhas em cada etapa.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Vamos para o Bloco 6 (Orquestração - Workflow) compilar tudo isso usando as arestas (Edges) e regras condicionais do StateGraph"
+
+**Padrão de Prompting:** Task Execution / Delegation
+> O usuário autorizou o avanço para a etapa de orquestração, citando os componentes técnicos-chave (Edges, condicionais, StateGraph) presentes na especificação `06_workflow.md`.
+
+**Resultado e Ação (Saída da IA):**
+- Criada branch `feature/06-workflow` a partir de `develop`.
+- Implementado `graph/workflow.py` com a função `build_graph()` instanciando o `StateGraph(AgentState)`.
+- Registrados os 7 nós de execução no grafo.
+- Adicionada aresta condicional `route_after_validation` com lógica de *fail-fast*: encerra o grafo em `END` imediatamente se `validate_inputs` detectar arquivos inválidos.
+- Adicionadas arestas condicionais `route_after_read` após `read_curriculum` e `read_job` para prevenir que falhas silenciosas de I/O cheguem aos nós de LLM.
+- Configurado fluxo sequencial: `extract_information → analyze_match → generate_report → save_report → END`.
+- Grafo compilado e exportado como instância de módulo (`app = build_graph()`).
+- Código formatado via Black/Flake8. PR #14 aberto com diagrama ASCII do fluxo. Issue #6 fechada.
+
+---
+
+### Workflow - Registro de Entrada e Saída Ausente (Bloco 6 - Correção)
+**Data:** 15 de Julho de 2026, 15:38
+
+**Objetivo:**
+Corrigir a omissão do registro de interação do Bloco 6 no arquivo de log histórico `prompts_dev.md`.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Faltou uma coisa, o registro de entrada e saida no /docs/prompts/prompts_dev.md"
+
+**Padrão de Prompting:** Feedback / Constraint Enforcement
+> O usuário identificou uma falha no processo de documentação e exigiu que o registro fosse retrospectivamente adicionado, reforçando que a atualização do log de interações é uma etapa obrigatória após cada bloco.
+
+**Resultado e Ação (Saída da IA):**
+- Verificado o arquivo `prompts_dev.md` e confirmada a ausência do registro do Bloco 6.
+- Adicionados dois registros: a interação principal do Bloco 6 e esta correção.
+- Commit atualizado na branch `feature/06-workflow` com o arquivo de log corrigido.
