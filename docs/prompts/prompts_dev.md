@@ -290,3 +290,26 @@ Realizar uma auditoria formal do projeto verificando a conformidade de todos os 
 - Auditoria completa gerada em `walkthrough.md` (artefato interno) cobrindo: estrutura de arquivos, conformidade arquitetural, GitFlow, Task Completion, log de prompts e CI/CD.
 - **Resultado geral: ✅ APROVADO** com 3 pontos menores identificados.
 - Correções aplicadas em `chore(audit)`: remoção de `pathlib` do `requirements.txt`, adição de `protection.json` e `pr_body.txt` ao `.gitignore`, remoção do `protection.json` do tracking do git e atualização do `docs/tasks.md` com os checks `[x]` dos blocos concluídos.
+
+---
+
+### Fase 8: Testes e Validação
+**Data:** 15 de Julho de 2026, 16:03
+
+**Objetivo:**
+Executar o pipeline final passando um currículo real e uma vaga sintética para testar a integração de ponta a ponta e validar o relatório gerado pelo LLM.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Vamos seguir para Bloco 8 (Testes e Validação), mas não quero que suba o PDF para o github. Crie o TXT da vaga."
+> *(Ação seguinte)*: "Continue" (após sucesso da execução)
+
+**Padrão de Prompting:** Execution & Security-focused
+> O usuário ordenou a execução final mas com restrições explícitas de segurança (não vazar PII no repositório). Ele também delegou à IA a criação de massa de dados realista (`vaga.txt`).
+
+**Resultado e Ação (Saída da IA):**
+- Atualização do `.gitignore` protegendo `input/*.pdf` e `input/*.txt`.
+- Criação de uma vaga sintética (`input/vaga.txt`) para a stack do projeto (Python, LangChain, etc.).
+- Correção de encoding em `main.py` removendo emojis que quebravam o terminal Windows (cp1252) com `UnicodeEncodeError`.
+- Execução bem-sucedida da aplicação (`python main.py ...`) com o `output/relatorio.md` devidamente populado.
+- Commit `fix(main)` protegendo emojis e commit do `.gitignore`.
+- Atualização de `docs/tasks.md` marcando todos os blocos como finalizados.
