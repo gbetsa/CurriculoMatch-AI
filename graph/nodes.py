@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from langchain_groq import ChatGroq
 from graph.state import AgentState, ExtractedInformation
@@ -95,7 +96,21 @@ def analyze_match(state: AgentState) -> AgentState:
         result = chain.invoke(
             {"candidato_data": candidato_json, "vaga_data": vaga_json}
         )
-        return {"analysis": result.content}
+        analysis_text = result.content
+
+        # Extrai o score numérico do texto Markdown gerado pela LLM.
+        # Suporta formatos como: "85/100", "Score: 85", "pontuação: 85", "85 de 100".
+        score_match = re.search(
+            r"(\d{1,3})\s*(?:/|de)\s*100|score[^\d]*(\d{1,3})|pontua[çc][aã]o[^\d]*(\d{1,3})",
+            analysis_text,
+            re.IGNORECASE,
+        )
+        score = 0
+        if score_match:
+            raw = score_match.group(1) or score_match.group(2) or score_match.group(3)
+            score = min(int(raw), 100)  # garante que não ultrapasse 100
+
+        return {"analysis": analysis_text, "compatibility_score": score}
     except Exception as e:
         return {"is_valid": False, "error_message": f"Falha na análise: {str(e)}"}
 
