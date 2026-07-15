@@ -25,3 +25,7 @@ output/
 .vscode/
 .idea/
 .DS_Store
+
+# Arquivos temporários de automação
+protection.json
+pr_body.txt
