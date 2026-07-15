@@ -313,3 +313,62 @@ Executar o pipeline final passando um currículo real e uma vaga sintética para
 - Execução bem-sucedida da aplicação (`python main.py ...`) com o `output/relatorio.md` devidamente populado.
 - Commit `fix(main)` protegendo emojis e commit do `.gitignore`.
 - Atualização de `docs/tasks.md` marcando todos os blocos como finalizados.
+
+---
+
+### Ajuste Fino - Generalização do Extrator
+**Data:** 15 de Julho de 2026, 16:16
+
+**Objetivo:**
+Melhorar a abrangência da extração de habilidades. O LLM estava perdendo skills aninhadas em descrições de projetos e a correção anterior enviesou o prompt apenas para tecnologia (ex: Vite, Express). O objetivo foi forçar a leitura profunda de todo o documento sem amarrar a uma profissão específica.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "No PDF tem uma parte de P R O J E T O S R E A L I Z A D O S [...] Onde mensiona o Sequelize, e o relatorio diz que não"
+> *(Ação seguinte)*: "Certo, mas ideia do projeto é a analise geral de curriculos, de diferentes areas, porem o extract_prompt.py parece estar focado em tecnologia com essa nova regra"
+**Padrão de Prompting:** Refinement / Context Expansion
+> O usuário iterou sobre a resposta da IA, primeiro apontando uma "alucinação/omissão" baseada na estrutura do documento e depois exigindo a abstração da regra para múltiplos domínios (marketing, engenharia, etc).
+
+**Resultado e Ação (Saída da IA):**
+- Modificação no schema Pydantic (`graph/state.py`): expandiu o conceito de `habilidades` para incluir hard skills, softwares, certificações e metodologias, forçando a leitura de experiências e projetos.
+- Modificação no `prompts/extract_prompt.py`: remoção do viés de TI, adicionando exemplos genéricos de múltiplas áreas (`Excel, Lean Six Sigma, AutoCad, React, Google Analytics`) e obrigando o parser a ler "TODO O TEXTO".
+
+---
+
+### Resolução de Alucinação (Gaps Injustos)
+**Data:** 15 de Julho de 2026, 16:20
+
+**Objetivo:**
+Corrigir o comportamento da LLM que gerava falsos negativos (apontava como falta/gap tecnologias que o candidato possuía, como Express.js e Sequelize) devido à limitação de extração e ausência de flexibilidade a sinônimos.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Quero uma solução para isso, o projeto é para ser certeiro em qualuqer area, e com esse gaps, pode prejudicar o candidato"
+> *(Ação seguinte)*: "Execute mais uma vez"
+
+**Padrão de Prompting:** Troubleshooting / Feedback Loop
+> O usuário relatou que a ferramenta penalizava o candidato de forma incorreta e exigiu que o projeto não gerasse esses "gaps" arbitrários para manter a confiabilidade.
+
+**Resultado e Ação (Saída da IA):**
+- Modificação na arquitetura de extração (`graph/state.py` e `prompts/extract_prompt.py`): o Pydantic Schema foi dividido, forçando a LLM a popular um array para "habilidades principais" e outro focado na "varredura de ferramentas dentro de experiências/projetos" para contornar a perda de tokens.
+- Otimização do avaliador (`prompts/analyze_prompt.py`): inclusão de uma "REGRA DE OURO" proibindo o modelo de apontar gaps apenas por variação de nomenclatura e exigindo verificação profunda nas experiências antes de penalizar o candidato.
+- Resultado: Execução detectou os requisitos corretamente sem alucinações de exclusão.
+
+---
+
+### Simplificação e Automação de Uso
+**Data:** 15 de Julho de 2026, 16:25
+
+**Objetivo:**
+Simplificar o processo de execução do sistema para que não seja mais necessário digitar comandos CLI com os caminhos dos arquivos. Gerar documentação de onboarding para o repositório.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, agora eu quero uma forma simplificada de rodar o projeto"
+> *(Ação seguinte)*: "Não, a inicialização ainta esta complicada, tendo que adicionar o nome dos arquivos pdf e txt"
+> *(Ação seguinte)*: "Para uma pessoa que acabou de clonar o projeto, oq ela deve fazer?"
+
+**Padrão de Prompting:** Usability / Developer Experience (DX) / Documentation
+> O usuário focou em "Experiência de Uso", rejeitou a automação intermediária que exigia argumentos e solicitou a criação de um roteiro de onboard para recém-chegados.
+
+**Resultado e Ação (Saída da IA):**
+- Criação de `run.bat` (Windows) e `run.sh` (Linux/Mac) com lógica para escanear automaticamente a pasta `input/` pelo primeiro `.pdf` e `.txt`, dispensando completamente parâmetros manuais.
+- Tratamento de erro interativo nos scripts para alertar sobre falta de VENV ou de arquivos base.
+- Criação do `README.md` completo detalhando o setup desde o git clone até a obtenção da chave do Groq.

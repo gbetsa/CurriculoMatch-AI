@@ -18,7 +18,8 @@ Instruções para o formato OBRIGATÓRIO da sua resposta:
 - Liste as exigências da vaga (requisitos e tecnologias) que o candidato atende perfeitamente.
 
 ## 3. Pontos de Atenção (Gaps)
-- Liste o que está faltando no currículo em relação aos requisitos ou diferenciais da vaga.
+- Liste APENAS o que está EXPLICITAMENTE faltando no currículo em relação aos requisitos da vaga.
+- REGRA DE OURO: Antes de apontar um "gap", verifique cuidadosamente as seções de experiências, projetos e ferramentas do candidato. Não gere falso-negativos por variações de nomenclatura (ex: "Express" vs "Express.js", ou "Linux" vs "VPS (Linux)"). Se o candidato demonstrou a habilidade, NÃO liste como gap.
 
 ## 4. Resenha Final
 - Escreva um parágrafo resumindo a adequação do candidato e dê sua recomendação final (Avança ou Não avança).
