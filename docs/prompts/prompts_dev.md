@@ -97,3 +97,108 @@ Melhorar a qualidade da documentação do versionamento. O usuário apontou que 
 - A restrição foi assimilada. A partir do Bloco 2, todos os commits conterão corpo estendido e detalhado.
 - Os Pull Requests passarão a incluir o detalhamento técnico profundo de tudo que foi implementado, os arquivos tocados e os critérios de aceite cumpridos.
 - Este registro foi adicionado ao log de prompts (`prompts_dev.md`).
+
+---
+
+### Implementação - Ferramentas de Leitura/Escrita e CI/CD (Bloco 2)
+**Data:** 15 de Julho de 2026, 15:08
+
+**Objetivo:**
+Executar o Bloco 2 criando as ferramentas (Tools) para leitura de PDFs e TXTs, gravação do relatório, e adicionar e testar localmente o pipeline de CI/CD (GitHub Actions).
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Pode seguir com o plano"
+
+**Padrão de Prompting:** Approval / Delegation
+> O usuário ratificou o plano gerado autonomamente pela IA para configurar CI/CD e regras de proteção antes de prosseguirmos.
+
+**Resultado e Ação (Saída da IA):**
+- Criado `tools/pdf_reader.py` usando `pymupdf`.
+- Criado `tools/job_reader.py` com suporte robusto a fallback de encoding (UTF-8 e CP1252).
+- Criado `tools/report_writer.py` usando `pathlib`.
+- Configurado o workflow de Actions em `.github/workflows/ci.yml`.
+- Executado formatador `black` no código.
+- Feita tentativa de configurar proteção de branch (`gh api`), recebendo aviso (403) de que a conta free para repo privado não suporta Proteção de Branch obrigatória via settings, no entanto, o Action funcionará.
+- Feito o Push e aberto o PR #10 (com descrições rigorosas, obedecendo o feedback da iteração anterior) e Issue #2 fechada.
+
+---
+
+### Bugfix - Atualização de Versões do GitHub Actions
+**Data:** 15 de Julho de 2026, 15:13
+
+**Objetivo:**
+Corrigir alertas de depreciação do Node.js 20 reportados pela pipeline de CI/CD.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Annotations 1 warning Complete job Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v3, actions/setup-python@v4. [...] A pipeline esta retornando esse aviso"
+
+**Padrão de Prompting:** Troubleshooting / Error-driven
+> O usuário forneceu a saída direta do console/pipeline de CI/CD contendo o aviso de depreciação. O padrão orienta a IA a diagnosticar o warning provido (ferramentas e ecossistema Github Actions) e resolver o aviso atualizando as dependências.
+
+**Resultado e Ação (Saída da IA):**
+- Modificou o arquivo `.github/workflows/ci.yml`.
+- Atualizou `actions/checkout@v3` para `@v4`.
+- Atualizou `actions/setup-python@v4` para `@v5`.
+- Realizou o commit da correção (bugfix) na branch atual (`feature/02-tools`) e fez o push para o repositório remoto para atualização do PR e do workflow online.
+
+---
+
+### Implementação - Estado Compartilhado e Esquemas (Bloco 3)
+**Data:** 15 de Julho de 2026, 15:17
+
+**Objetivo:**
+Executar as especificações do Bloco 3, implementando a memória compartilhada do agente (`AgentState`) e os esquemas Pydantic que serão usados para forçar uma saída estruturada da LLM.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Podemos seguir para Issue #3 (Bloco 3: Estado Compartilhado e Esquemas Pydantic), porem a pipeline ainda esta retornando um aviso: Cleaning up orphan processes Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5."
+
+**Padrão de Prompting:** Delegation / Status Report
+> O usuário relatou o warning (agora restrito à infraestrutura nativa do Actions V4/V5 e Node 24) e autorizou a progressão para a próxima etapa (Bloco 3). A IA interpretou a autorização e lidou com a execução do código de infraestrutura de dados da aplicação.
+
+**Resultado e Ação (Saída da IA):**
+- Criada a branch `feature/03-state` a partir de `develop`.
+- Implementado o arquivo `graph/state.py` com o `AgentState` e as classes Pydantic (`CurriculumData`, `JobData`, `ExtractedInformation`) detalhadas com o atributo `Field` de `description` fundamental para as ferramentas/JSON mode das LLMs.
+- Formatado e lintado sem erros via Black/Flake8.
+- Realizado o commit seguindo estritamente as regras de documentação e aberto o Pull Request detalhado (#11) vinculado à Issue #3 (atualizando status no Kanban).
+
+---
+
+### Implementação - Criação dos Prompts (Bloco 4)
+**Data:** 15 de Julho de 2026, 15:23
+
+**Objetivo:**
+Executar as especificações do Bloco 4 implementando a engenharia de prompts da aplicação usando `ChatPromptTemplate` do LangChain.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Vamos iniciar o Bloco 4 (Criação dos Prompts)"
+
+**Padrão de Prompting:** Delegation / Workflow progression
+> O usuário ditou explicitamente o fluxo (avanço sequencial de blocos). A IA acata o comando e avança na ramificação (GitFlow) e Kanban aplicando os requisitos da especificação pré-planejada.
+
+**Resultado e Ação (Saída da IA):**
+- Criado e feito checkout na branch `feature/04-prompts`.
+- Criado `prompts/extract_prompt.py` instruindo a IA a preencher todos os campos do schema JSON com base apenas no texto fornecido, evitando alucinações de parâmetros.
+- Criado `prompts/analyze_prompt.py` instruindo a IA a cruzar os dados, gerar score de aderência, gaps e recomendações em Markdown padronizado.
+- Ferramentas de CI locais (Black e Flake8) utilizadas para garantia de formato.
+- Atualizado log, aberto PR detalhado (#12) para a branch `develop`, movida a Issue #4 para a coluna de finalizada (Closed).
+
+---
+
+### Implementação - Nós de Execução / Nodes (Bloco 5)
+**Data:** 15 de Julho de 2026, 15:27
+
+**Objetivo:**
+Executar as especificações do Bloco 5, orquestrando as "ferramentas" criadas nos blocos 2, 3 e 4 dentro de funções Python robustas que serão usadas como os Nós (Nodes) da máquina de estados do LangGraph.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Vamos para a proxima etapa: Bloco 5 (Nós de Execução - Nodes). validate_inputs, read_curriculum, read_job, extract_information, analyze_match, generate_report, save_report"
+
+**Padrão de Prompting:** Task Execution / Delegation
+> O usuário autorizou o avanço do Workflow citando nominalmente as responsabilidades estabelecidas nas Specs do projeto para a IA seguir.
+
+**Resultado e Ação (Saída da IA):**
+- Criada e feito checkout na branch `feature/05-nodes` a partir de `develop`.
+- Implementado arquivo `graph/nodes.py`.
+- Instanciado `ChatGroq` e integrado `with_structured_output(ExtractedInformation)`.
+- Escritas 7 funções de processamento (`validate_inputs`, `read_curriculum_node`, `read_job_node`, `extract_information`, `analyze_match`, `generate_report`, `save_report_node`) gerenciando a leitura e salvamento do AgentState e tratamento estrito de exceções (try/except).
+- Código formatado via Black/Flake8. PR #13 aberto e Issue #5 marcada como completa.
