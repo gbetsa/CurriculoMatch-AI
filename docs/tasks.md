@@ -28,6 +28,6 @@
 - [x] **Bloco 7: Ponto de Entrada (main.py)**
   - [x] Implementar `main.py` para invocação do sistema e passagem do estado inicial.
 
-- [ ] **Bloco 8: Testes e Validação**
-  - [ ] Adicionar arquivo PDF de currículo e TXT da vaga em `input/`.
-  - [ ] Executar pipeline e verificar saída em `output/relatorio.md`.
+- [x] **Bloco 8: Testes e Validação**
+  - [x] Adicionar arquivo PDF de currículo e TXT da vaga em `input/`.
+  - [x] Executar pipeline e verificar saída em `output/relatorio.md`.

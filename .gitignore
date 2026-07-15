@@ -29,3 +29,8 @@ output/
 # Arquivos temporários de automação
 protection.json
 pr_body.txt
+comment_body.md
+
+# Arquivos de input (dados pessoais — não versionar)
+input/*.pdf
+input/*.txt

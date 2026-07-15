@@ -38,7 +38,7 @@ def main():
 
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
-        print("❌ ERRO: A variável de ambiente GROQ_API_KEY não está definida.")
+        print("[ERRO] A variavel de ambiente GROQ_API_KEY nao esta definida.")
         print("   Crie um arquivo .env com base no .env.example e preencha sua chave.")
         sys.exit(1)
 
@@ -56,27 +56,27 @@ def main():
     }
 
     # --- 5. Execução do Grafo com Logs Informativos ---
-    print("\n🚀 CurriculoMatch AI — Iniciando análise...")
-    print(f"   📄 Currículo : {args.curriculo}")
-    print(f"   📋 Vaga      : {args.vaga}\n")
+    print("\n>> CurriculoMatch AI --- Iniciando analise...")
+    print(f"   Curriculo : {args.curriculo}")
+    print(f"   Vaga      : {args.vaga}\n")
 
-    print("🔍 Etapa 1/6: Validando arquivos de entrada...")
-    print("📖 Etapa 2/6: Lendo currículo...")
-    print("📖 Etapa 3/6: Lendo descrição da vaga...")
-    print("🤖 Etapa 4/6: Extraindo informações estruturadas via LLM...")
-    print("⚖️  Etapa 5/6: Analisando compatibilidade...")
-    print("📝 Etapa 6/6: Gerando e salvando relatório...\n")
+    print("[1/6] Validando arquivos de entrada...")
+    print("[2/6] Lendo curriculo...")
+    print("[3/6] Lendo descricao da vaga...")
+    print("[4/6] Extraindo informacoes estruturadas via LLM...")
+    print("[5/6] Analisando compatibilidade...")
+    print("[6/6] Gerando e salvando relatorio...\n")
 
     final_state = app.invoke(initial_state)
 
     # --- 6. Verificação do Resultado ---
     if not final_state.get("is_valid", True) or final_state.get("error_message"):
         error_msg = final_state.get("error_message", "Erro desconhecido.")
-        print(f"❌ PIPELINE ENCERRADO COM ERRO:\n   {error_msg}")
+        print(f"[ERRO] PIPELINE ENCERRADO:\n   {error_msg}")
         sys.exit(1)
 
-    print("✅ Análise concluída com sucesso!")
-    print("   O relatório foi salvo em: output/relatorio.md\n")
+    print("[OK] Analise concluida com sucesso!")
+    print("   O relatorio foi salvo em: output/relatorio.md\n")
 
 
 if __name__ == "__main__":
