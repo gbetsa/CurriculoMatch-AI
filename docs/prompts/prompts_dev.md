@@ -372,3 +372,95 @@ Simplificar o processo de execução do sistema para que não seja mais necessá
 - Criação de `run.bat` (Windows) e `run.sh` (Linux/Mac) com lógica para escanear automaticamente a pasta `input/` pelo primeiro `.pdf` e `.txt`, dispensando completamente parâmetros manuais.
 - Tratamento de erro interativo nos scripts para alertar sobre falta de VENV ou de arquivos base.
 - Criação do `README.md` completo detalhando o setup desde o git clone até a obtenção da chave do Groq.
+
+---
+
+### Qualidade - Avaliação Crítica Pré-Entrega (Auditoria Externa)
+**Data:** 15 de Julho de 2026, 17:00
+
+**Objetivo:**
+Realizar uma avaliação crítica e exaustiva do projeto sob a ótica do professor avaliador, mapeando todos os critérios do edital do Mini-Projeto Avaliativo do Módulo 2 e gerando um plano de ação para atingir a nota máxima.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Você é um avaliador da disciplina IA para Desenvolvedores e deve corrigir este projeto seguindo EXATAMENTE os critérios do Mini-Projeto Avaliativo do Módulo 2. Analise todo o repositório (código, README, documentação, prompts, estrutura de arquivos, commits quando disponíveis e slides) e faça uma avaliação extremamente crítica, como se fosse o professor responsável."
+
+**Padrão de Prompting:** Role-based / Evaluation-driven
+> O usuário atribuiu à IA o papel de avaliador externo (professor), fornecendo os critérios completos da rubrica como contexto e solicitando análise crítica de todo o repositório — código, documentação, versionamento, segurança e prompts.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura completa do repositório: README.md, todos os arquivos de `/graph`, `/tools`, `/prompts`, `/docs`, `.env.example`, `.gitignore`, `requirements.txt`, `main.py`.
+- Execução de `git log`, `git branch -a` e `git shortlog` para análise do histórico.
+- Geração de relatório de avaliação detalhado cobrindo os 8 critérios da rubrica.
+- **Nota atribuída: 8,6 / 10,0.**
+- Principais pontos fortes identificados: LangGraph genuíno, GitFlow exemplar, README completo, ferramentas reais, segurança adequada.
+- Problema crítico identificado: ausência de slides (perda de 1,0 pt). Problemas menores: `compatibility_score` não populado como inteiro, `output/relatorio.md` com PII versionado, `requirements.txt` sem versões fixadas.
+- Gerado plano de ação priorizado com estimativa de ganho por correção.
+
+---
+
+### Correção - Remoção de PII Versionado (output/relatorio.md)
+**Data:** 15 de Julho de 2026, 17:01
+
+**Objetivo:**
+Verificar e corrigir o versionamento acidental do arquivo `output/relatorio.md`, que continha o nome real do candidato (PII), em violação ao `.gitignore` e às boas práticas de privacidade.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "🟠 git rm --cached output/relatorio.md → o relatório com nome do candidato real está versionado: Quero que remova o versionamento"
+
+**Padrão de Prompting:** Security / Privacy-driven
+> O usuário identificou uma violação de privacidade apontada na auditoria e solicitou a remoção do arquivo do rastreamento do Git sem deletá-lo do disco.
+
+**Resultado e Ação (Saída da IA):**
+- Executado `git ls-files output/` para verificar se o arquivo ainda estava no tracking.
+- Constatado que o arquivo **não estava mais rastreado** — o merge anterior da branch `feature/10-docs-readme` para `develop` já havia removido `output/relatorio.md` do índice do Git.
+- Nenhuma ação adicional foi necessária. PII confirmado como não versionado.
+
+---
+
+### Correção - Populando compatibility_score como Inteiro no Estado (Bloco 11)
+**Data:** 15 de Julho de 2026, 17:02
+
+**Objetivo:**
+Corrigir a inconsistência entre o schema `AgentState` (que declara `compatibility_score: int`) e a implementação real dos nós, onde o campo nunca era atualizado como inteiro separado — o score estava embutido apenas no texto Markdown da análise.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "🟠 Popular compatibility_score como inteiro no estado: como resolver?"
+
+**Padrão de Prompting:** Troubleshooting / Architecture Fix
+> O usuário solicitou orientação sobre como resolver a inconsistência identificada na auditoria, delegando à IA a análise do código e a implementação da correção.
+
+**Resultado e Ação (Saída da IA):**
+- Lido o código do nó `analyze_match` em `graph/nodes.py`.
+- Adicionado `import re` ao módulo.
+- Implementado `re.search()` com regex que captura o score nos formatos gerados pela LLM: `"85/100"`, `"85 de 100"`, `"Score: 85"`, `"pontuação: 85"`.
+- Adicionado `min(int(raw), 100)` como guarda de segurança contra valores fora do intervalo.
+- O nó agora retorna `{"analysis": analysis_text, "compatibility_score": score}`, preenchendo corretamente o campo `int` do `AgentState`.
+
+---
+
+### Correção - Fixando Versões no requirements.txt (Bloco 11)
+**Data:** 15 de Julho de 2026, 17:02
+
+**Objetivo:**
+Fixar as versões exatas das dependências no `requirements.txt` para garantir reprodutibilidade total do ambiente de instalação e eliminar o risco de quebra por atualização automática de pacotes.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "🟡 Fixar versões no requirements.txt: como resolver?"
+
+**Padrão de Prompting:** Best Practices / Dependency Management
+> O usuário solicitou a aplicação da boa prática de pin de versões, delegando à IA a leitura das versões instaladas no venv e a atualização do arquivo.
+
+**Resultado e Ação (Saída da IA):**
+- Executado `venv\Scripts\pip show` para todos os pacotes do projeto dentro do ambiente virtual.
+- Coletadas as versões exatas instaladas e funcionais do projeto.
+- Atualizado `requirements.txt` com versões fixadas via operador `==`:
+  - `langgraph==1.2.9`
+  - `langchain==1.3.13`
+  - `langchain-groq==1.1.3`
+  - `langchain-core==1.4.9`
+  - `python-dotenv==1.2.2`
+  - `pydantic==2.13.4`
+  - `pymupdf==1.28.0`
+- Criada branch `feature/11-audit-improvements` a partir de `develop` para conter as correções do Bloco 11.
+- Commit realizado seguindo Conventional Commits com corpo estendido detalhando todas as alterações.
+- Branch publicada no GitHub remoto.
