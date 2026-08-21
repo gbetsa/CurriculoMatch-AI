@@ -767,3 +767,35 @@ Corrigir testes do checkpointer que falhavam no CI porque nao havia PostgreSQL d
 - Adicionado decorator `@requires_postgres` para pular testes quando PostgreSQL nao esta disponivel
 - test_checkpointer_none_without_database_url permanece sem skip (nao precisa de banco)
 - Testes agora passam no CI (7 passam, 2 pulados por falta de PostgreSQL)
+
+---
+
+### Implementacao - Bloco 10: API REST com FastAPI
+**Data:** 21 de Agosto de 2026, 19:30
+
+**Objetivo:**
+Implementar API REST completa para o agente de triagem com FastAPI, incluindo endpoints de analise, historico e saude.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Agora sim, pela develop, comece uma nova branch para trabalhamos na task 10_api.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 10, delegando toda a execucao tecnica a IA.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #28 (Bloco 9) na branch develop
+- Criacao da branch `feature/10-api` a partir de develop
+- Criacao da estrutura `api/` com os seguintes arquivos:
+  - `api/__init__.py`: modulo da API
+  - `api/schemas.py`: modelos Pydantic (AnalyzeRequest, AnalysisResult, BatchResult, HistoryResponse, HealthResponse, ErrorResponse)
+  - `api/dependencies.py`: RateLimiter (100 req/min), validacao de upload, lazy loading do grafo
+  - `api/main.py`: FastAPI app com endpoints:
+    - POST /analyze: analise individual curriculo x vaga
+    - POST /analyze/batch: analise em lote com ranking
+    - GET /history: historico paginado com filtros
+    - GET /history/{analysis_id}: detalhes de analise
+    - GET /health: health check com status do banco e LLM
+- CORS middleware configurado para Streamlit
+- Tratamento de erros padronizado com ErrorResponse
+- Atualizacao do requirements.txt: fastapi 0.115.12, uvicorn 0.34.3, python-multipart 0.0.20
+- Teste de importacao: API importa sem erros
