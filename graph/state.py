@@ -43,6 +43,7 @@ class ExtractedInformation(BaseModel):
 
 class AnalysisRecord(BaseModel):
     """Registro de uma analise anterior, persistida no checkpointer."""
+
     analysis_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     candidate_name: str = ""
     job_title: str = ""

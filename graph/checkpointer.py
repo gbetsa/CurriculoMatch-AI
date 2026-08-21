@@ -18,7 +18,7 @@ def create_checkpointer() -> Optional[PostgresSaver]:
         None: Se DATABASE_URL nao estiver configurada.
     """
     database_url = os.getenv("DATABASE_URL")
-    
+
     if not database_url:
         return None
 
@@ -32,5 +32,5 @@ def create_checkpointer() -> Optional[PostgresSaver]:
 
     checkpointer = PostgresSaver(pool)
     checkpointer.setup()
-    
+
     return checkpointer

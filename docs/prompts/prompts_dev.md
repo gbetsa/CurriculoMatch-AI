@@ -725,3 +725,24 @@ Implementar persistencia de estado entre execucoes do agente LangGraph utilizand
 - Teste de compilacao: grafo compila sem erros
 - Teste de regressao: 6 testes unitarios existentes passando (test_nodes + test_tools)
 - Branch aguardando commit e PR
+
+---
+
+### Implementacao - Correcao de Formatacao CI (Black)
+**Data:** 21 de Agosto de 2026, 18:45
+
+**Objetivo:**
+Corrigir erros de formatacao detectados pelo CI (Black) no PR #28. Formatar arquivos `graph/checkpointer.py`, `graph/state.py` e `tests/test_checkpointer.py`.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, faça o commit, lembre de salvar os prompts"
+
+**Padrao de Prompting:** Fix / Formatting
+> O usuario pediu para corrigir o erro de formatacao do CI e registrar a interacao no prompts_dev.md.
+
+**Resultado e Acao (Saida da IA):**
+- Execucao de `black --check .` identificou 3 arquivos para formatar
+- Execucao de `black graph/checkpointer.py graph/state.py tests/test_checkpointer.py` reformata os 3 arquivos
+- Arquivos formatados: graph/checkpointer.py, graph/state.py, tests/test_checkpointer.py
+- 10 arquivos ja estavam formatados corretamente
+- CI deve passar agora com formatacao correta
