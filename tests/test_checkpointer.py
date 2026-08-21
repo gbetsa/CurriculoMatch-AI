@@ -1,6 +1,26 @@
 import os
 import pytest
+import psycopg
 from graph.checkpointer import create_checkpointer
+
+
+def is_postgres_available():
+    """Check if PostgreSQL is available."""
+    try:
+        conn = psycopg.connect(
+            "postgresql://postgres:postgres@localhost:5432/curriculomatch",
+            connect_timeout=3,
+        )
+        conn.close()
+        return True
+    except (psycopg.OperationalError, psycopg.DatabaseError):
+        return False
+
+
+requires_postgres = pytest.mark.skipif(
+    not is_postgres_available(),
+    reason="PostgreSQL not available",
+)
 
 
 def test_checkpointer_creation():
@@ -29,6 +49,7 @@ def test_checkpointer_none_without_database_url():
         os.environ["DATABASE_URL"] = original_value
 
 
+@requires_postgres
 def test_checkpointer_tables_created():
     """Test that checkpointer creates required tables."""
     os.environ["DATABASE_URL"] = (
@@ -36,20 +57,20 @@ def test_checkpointer_tables_created():
     )
     checkpointer = create_checkpointer()
 
-    import psycopg
-
     conn = psycopg.connect(
         "postgresql://postgres:postgres@localhost:5432/curriculomatch"
     )
     cur = conn.cursor()
 
     # Check if tables exist
-    cur.execute("""
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
+    cur.execute(
+        """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
         AND table_name IN ('checkpoints', 'checkpoint_writes', 'checkpoint_blobs')
-    """)
+    """
+    )
     tables = [row[0] for row in cur.fetchall()]
 
     assert "checkpoints" in tables
@@ -60,6 +81,7 @@ def test_checkpointer_tables_created():
     conn.close()
 
 
+@requires_postgres
 def test_checkpointer_config_structure():
     """Test that checkpointer has the expected configuration structure."""
     os.environ["DATABASE_URL"] = (
