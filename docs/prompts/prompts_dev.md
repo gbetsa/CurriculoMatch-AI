@@ -767,3 +767,59 @@ Corrigir testes do checkpointer que falhavam no CI porque nao havia PostgreSQL d
 - Adicionado decorator `@requires_postgres` para pular testes quando PostgreSQL nao esta disponivel
 - test_checkpointer_none_without_database_url permanece sem skip (nao precisa de banco)
 - Testes agora passam no CI (7 passam, 2 pulados por falta de PostgreSQL)
+
+---
+
+### Implementacao - Bloco 10: API REST com FastAPI
+**Data:** 21 de Agosto de 2026, 19:30
+
+**Objetivo:**
+Implementar API REST completa para o agente de triagem com FastAPI, incluindo endpoints de analise, historico e saude.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Agora sim, pela develop, comece uma nova branch para trabalhamos na task 10_api.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 10, delegando toda a execucao tecnica a IA.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #28 (Bloco 9) na branch develop
+- Criacao da branch `feature/10-api` a partir de develop
+- Criacao da estrutura `api/` com os seguintes arquivos:
+  - `api/__init__.py`: modulo da API
+  - `api/schemas.py`: modelos Pydantic (AnalyzeRequest, AnalysisResult, BatchResult, HistoryResponse, HealthResponse, ErrorResponse)
+  - `api/dependencies.py`: RateLimiter (100 req/min), validacao de upload, lazy loading do grafo
+  - `api/main.py`: FastAPI app com endpoints:
+    - POST /analyze: analise individual curriculo x vaga
+    - POST /analyze/batch: analise em lote com ranking
+    - GET /history: historico paginado com filtros
+    - GET /history/{analysis_id}: detalhes de analise
+    - GET /health: health check com status do banco e LLM
+- CORS middleware configurado para Streamlit
+- Tratamento de erros padronizado com ErrorResponse
+- Atualizacao do requirements.txt: fastapi 0.115.12, uvicorn 0.34.3, python-multipart 0.0.20
+- Teste de importacao: API importa sem erros
+
+---
+
+### Implementacao - Documentacao da API no README.md
+**Data:** 21 de Agosto de 2026, 20:00
+
+**Objetivo:**
+Documentar endpoints da API REST no README.md na secao "Tool e Integracao", conforme criterio de aceite da Spec 10.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Mas faltou uma coisa no kanban, como voce abre o pr e fecha o card sem terminar tudo? Documentar endpoints no README.md (secao Tool e Integracao). Registre tudo em prompts"
+
+**Padrao de Prompting:** Process Correction / Documentation
+> O usuario identificou que o card foi fechado antes de completar todos os criterios de aceite. A IA corrigiu o erro, reabriu a issue e documentou os endpoints.
+
+**Resultado e Acao (Saida da IA):**
+- Reabertura da issue #30 no GitHub
+- Moveu card de volta para "In progress" no Kanban
+- Adicionou secao 9 "API REST (FastAPI)" no README.md com:
+  - 9.1: Instrucoes de execucao (uvicorn, documentacao Swagger)
+  - 9.2: Tabela de endpoints (5 endpoints documentados)
+  - 9.3: Exemplos de uso com curl
+  - 9.4: Informacoes de seguranca (rate limit, upload, CORS)
+- Atualizacao do prompts_dev.md com registro desta interacao
