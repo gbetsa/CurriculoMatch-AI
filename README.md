@@ -104,7 +104,55 @@ Requisitos:
 
 ---
 
-## 9. Documentação e Histórico de Prompts
+## 9. API REST (FastAPI)
+
+A API expõe o agente de triagem como REST para consumo pela interface Streamlit e automações externas (n8n).
+
+### 9.1. Execução da API
+```bash
+# Instalar dependências
+pip install -r requirements.txt
+
+# Iniciar servidor
+uvicorn api.main:app --reload
+
+# Acessar documentação interativa
+http://localhost:8000/docs
+```
+
+### 9.2. Endpoints
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/analyze` | Análise individual de 1 currículo × 1 vaga |
+| `POST` | `/analyze/batch` | Análise em lote com ranking de candidatos |
+| `GET` | `/history` | Histórico paginado com filtros |
+| `GET` | `/history/{analysis_id}` | Detalhes de uma análise específica |
+| `GET` | `/health` | Health check com status do banco e LLM |
+
+### 9.3. Exemplos de Uso
+
+**Análise Individual:**
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -F "curriculum=@curriculo.pdf" \
+  -F "job_title=Desenvolvedor Python" \
+  -F "job_description=Vaga para dev Python com Django"
+```
+
+**Health Check:**
+```bash
+curl http://localhost:8000/health
+```
+
+### 9.4. Segurança
+* **Rate Limiting:** 100 requisições por minuto por IP
+* **Validação de Upload:** Apenas PDF, máximo 10MB
+* **CORS:** Configurado para permitir Streamlit (porta 8501)
+
+---
+
+## 10. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 

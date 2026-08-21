@@ -799,3 +799,27 @@ Implementar API REST completa para o agente de triagem com FastAPI, incluindo en
 - Tratamento de erros padronizado com ErrorResponse
 - Atualizacao do requirements.txt: fastapi 0.115.12, uvicorn 0.34.3, python-multipart 0.0.20
 - Teste de importacao: API importa sem erros
+
+---
+
+### Implementacao - Documentacao da API no README.md
+**Data:** 21 de Agosto de 2026, 20:00
+
+**Objetivo:**
+Documentar endpoints da API REST no README.md na secao "Tool e Integracao", conforme criterio de aceite da Spec 10.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Mas faltou uma coisa no kanban, como voce abre o pr e fecha o card sem terminar tudo? Documentar endpoints no README.md (secao Tool e Integracao). Registre tudo em prompts"
+
+**Padrao de Prompting:** Process Correction / Documentation
+> O usuario identificou que o card foi fechado antes de completar todos os criterios de aceite. A IA corrigiu o erro, reabriu a issue e documentou os endpoints.
+
+**Resultado e Acao (Saida da IA):**
+- Reabertura da issue #30 no GitHub
+- Moveu card de volta para "In progress" no Kanban
+- Adicionou secao 9 "API REST (FastAPI)" no README.md com:
+  - 9.1: Instrucoes de execucao (uvicorn, documentacao Swagger)
+  - 9.2: Tabela de endpoints (5 endpoints documentados)
+  - 9.3: Exemplos de uso com curl
+  - 9.4: Informacoes de seguranca (rate limit, upload, CORS)
+- Atualizacao do prompts_dev.md com registro desta interacao
