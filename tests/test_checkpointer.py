@@ -63,14 +63,12 @@ def test_checkpointer_tables_created():
     cur = conn.cursor()
 
     # Check if tables exist
-    cur.execute(
-        """
+    cur.execute("""
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public'
         AND table_name IN ('checkpoints', 'checkpoint_writes', 'checkpoint_blobs')
-    """
-    )
+    """)
     tables = [row[0] for row in cur.fetchall()]
 
     assert "checkpoints" in tables
