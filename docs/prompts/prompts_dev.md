@@ -485,3 +485,216 @@ Mesmo não sendo um requisito formal do Mini-Projeto, o usuário quis ir além e
 - Modificação no `ci.yml` do GitHub Actions para rodar a suíte `pytest tests/` no CI.
 - Criação de mocks robustos (como `RunnableLambda`) simulando o comportamento condicional da LLM para extração da RegEx em testes unitários.
 - 6 testes isolados escritos com sucesso nas rotinas de validação de arquivos (`read_curriculum`, `read_job`) e geração (`save_report`).
+
+---
+
+# ==========================================
+# PROJETO FINAL - M2.2 (Nota 60%)
+# Evolução do CurriculoMatch-AI
+# ==========================================
+
+---
+
+### Análise - Gap Analysis Projeto Final vs Projeto Atual
+**Data:** 21 de Agosto de 2026, 14:30
+
+**Objetivo:**
+Analisar o projeto CurriculoMatch-AI existente e comparar com os requisitos do projeto final (M2.2), mapeando todos os gaps que precisam ser preenchidos para atingir nota máxima.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Tenho esse projeto que foi feito para um mini projeto do curso, agora tenho um ultimo projeto final, que pode ser usado esse como base para fazer, quero uma analise desse projeto e comparar com os requisitos do novo projeto, para sabermos oq falta ser feito para tirar 10"
+
+**Padrão de Prompting:** Analysis-driven / Gap Analysis
+> O usuário solicitou uma análise comparativa entre o estado atual do projeto e os requisitos do edital do projeto final, identificando lacunas tecnicamente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura completa do repositório: todos os arquivos de /graph, /tools, /prompts, /docs, /tests, main.py, requirements.txt, .env.example, .gitignore, .github/workflows/ci.yml
+- Análise de git log e branches existentes
+- Mapeamento dos 15 critérios de avaliação do edital contra o que existe
+- Relatório de gap analysis detalhado: ~2.5/10 estimado, com 11 itens faltantes
+- Categorização dos gaps: Bloco Crítico (memória, segurança, observabilidade), Bloco Alto (paralelização, testes E2E, DevOps, low-code), Bloco Médio (docs, Kanban, vídeo)
+
+---
+
+### Planejamento - Definição de Estratégia e Caminhos
+**Data:** 21 de Agosto de 2026, 14:45
+
+**Objetivo:**
+Apresentar ao usuário as opções de como evoluir o projeto (expandir domínio, reconstruir, ou evoluir existente) e validar a direção escolhida.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, voce entendeu a ideia do projeto atual e do novo projeto. Como esse novo projeto pode ser estruturado? Não quero nada de planejamento ou codigo ainda, apenas uma ideia"
+
+**Padrão de Prompting:** Consultoria / Strategy
+> O usuário pediu uma visão conceitual de estruturas possíveis, sem compromisso de implementação.
+
+**Resultado e Ação (Saída da IA):**
+- Apresentação de 3 caminhos: (A) Recrutador Inteligente Completo, (B) Agent Factory, (C) Recrutador + HR Copilot
+- Recomendação do Caminho A (evolução natural, domínio conhecido, gaps encaixam)
+- Validação do usuário: Caminho A escolhido
+
+---
+
+### Planejamento - Conceito Estrutural do Caminho A
+**Data:** 21 de Agosto de 2026, 14:55
+
+**Objetivo:**
+Detalhar conceitualmente como o Caminho A ("Recrutador Inteligente Completo") seria estruturado.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Com o caminho A, como pode ser feito?"
+
+**Padrão de Prompting:** Conceptual / Architecture Design
+> O usuário pediu uma visão estrutural do que mudaria na arquitetura.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama conceitual de 6 componentes novos: memória entre execuções, comparação multi-candidato, cenário de falha real, segurança e aprovação, observabilidade, low-code
+- Tabela de capacidades "antes vs depois"
+- Justificativa de por que encaixa nos critérios do edital
+
+---
+
+### Planejamento - Conceito Low-Code n8n
+**Data:** 21 de Agosto de 2026, 15:05
+
+**Objetivo:**
+Detalhar como seria o fluxo de automação low-code usando n8n.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Como seria o low code? O fluxo do n8n por exemplo?"
+
+**Padrão de Prompting:** Technical Deep-Dive
+> O usuário pediu detalhamento técnico do componente low-code.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama bloco-a-bloco: Gatilho (Email/Webhook) → Processamento → Chama API → Saída (Slack/Email)
+- Fluxo alternativo para vagas recebidas via Google Forms
+- Justificativa de por que conta como low-code no edital
+- Instruções de demonstração no vídeo
+
+---
+
+### Análise - Documentação Oficial Revisada
+**Data:** 21 de Agosto de 2026, 15:20
+
+**Objetivo:**
+Revisar a documentação oficial atualizada do projeto final e comparar com a análise anterior.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Saiu a documentação oficial do projeto final, vou te mandar os requisitos e check list."
+
+**Padrão de Prompting:** Validation / Re-analysis
+> O usuário forneceu o documento oficial completo e pediu revalidação.
+
+**Resultado e Ação (Saída da IA):**
+- Recebimento e análise completa do documento oficial (4. REQUISITOS, 5. ROTEIRO, 6. CRITÉRIOS, 7. CHECKLIST)
+- Confirmação: gaps anteriores permanecem válidos
+- Identificação de que o checklist tem 4 blocos: Repositório, Domínio/Arquitetura, Segurança/Observabilidade, QA/DevOps/Low-Code
+- Planejamento de execução em 8 fases com estimativa de 10 dias
+
+---
+
+### Planejamento - Decisões Técnicas
+**Data:** 21 de Agosto de 2026, 15:35
+
+**Objetivo:**
+Validar decisões técnicas: PostgreSQL vs SQLite para memória, RAG vs checkpointer.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Tenho o postgres instalado, seria melhor e mais facil que o SqliteSaver"
+> "O projeto não pede RAG?"
+
+**Padrão de Prompting:** Technical Decision / Clarification
+> O usuário validou decisões técnicas e esclareceu requisitos do edital.
+
+**Resultado e Ação (Saída da IA):**
+- Decisão: PostgreSQL com `PostgresSaver` (não SQLite) —.justificada por ser "produção real"
+- Decisão: Checkpointer persistente (não RAG) — edital permite "state, checkpointer, persistência OU RAG"
+- Decisão: Streamlit para UI (mais rápido que Gradio para data apps)
+- Decisão: n8n local via Docker (self-hosted, gratuito, visual)
+
+---
+
+### Planejamento - Fluxo de Uso Completo
+**Data:** 21 de Agosto de 2026, 15:50
+
+**Objetivo:**
+Detalhar o fluxo de uso de ponta a ponta: usuário na web → API → agente → banco → resposta.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Como seria o fluxo de uso? ex. Usuario entra na pagina web, sobe arquivos, requisita o python..."
+
+**Padrão de Prompting:** User Flow / UX Design
+> O usuário pediu visualização do fluxo de uso completo.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama completo: Usuário → Streamlit → FastAPI → LangGraph → PostgreSQL
+- Passo a passo: upload → validação → processamento paralelo → extração LLM → análise → aprovação → relatório
+- Cenário "Comparar Candidatos": 1 vaga + N currículos → ranking
+- Cenário "n8n Low-Code": email → webhook → API → Slack
+- Mapeamento: o que já existe vs o que é novo
+
+---
+
+### Implementação - Criação de Specs do Projeto Final
+**Data:** 21 de Agosto de 2026, 16:10
+
+**Objetivo:**
+Criar especificações detalhadas para cada tarefa do projeto final, seguindo o padrão de numeração existente (01-08).
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "quero que vc gere um arquivo de specs em docs, ja temos as pastas, e lembre de consultar as documentações em docs, nos arquivos .md. Comece criando uma nova branch para essa tarefa"
+> "Pare, não esta funcionando, quero que em specs, crie as specs separadas por tarefas, seguindo o padrão de numeração"
+
+**Padrão de Prompting:** Constraint-based / Process Correction
+> O usuário corrigiu o formato (specs separadas, não arquivo único) e reforçou o padrão existente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura de todas as specs existentes (01-08) para identificar padrão de formato
+- Criação da branch `feature/final-project-spec` a partir de `develop`
+- Criação de 10 novas specs seguindo o padrão: Bloco N + Descrição + Critérios de Aceite + Dependências + Branch Sugerida
+- Specs criadas: 09 (Memória), 10 (API), 11 (Streamlit), 12 (Segurança), 13 (Observabilidade), 14 (QA com IA), 15 (DevOps), 16 (Low-Code), 17 (Prompts/Refinamento), 18 (Documentação/Entrega)
+
+---
+
+### Documentação - Registro de Interação no Prompts Dev
+**Data:** 21 de Agosto de 2026, 16:25
+
+**Objetivo:**
+Registrar todas as interações do projeto final no log de prompts, separando do mini-projeto anterior.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Antes de qualquer commit, deve me pedir autorização. Note que em /docs/prompts, temos o arquivo prompts_dev.md, e nele tem todo historico de saida, entrada e padrao de prompt, da IA e do usuario. Quero que registre nossa interação para criar essas specs lá, quero que separe os logs anteriores para esses novos logs do projeto final"
+
+**Padrão de Prompting:** Constraint / Documentation-first
+> O usuário exigiu registro completo da interação antes de qualquer commit, com separação clara entre mini-projeto e projeto final.
+
+**Resultado e Ação (Saída da IA):**
+- Adição de separador visual "# PROJETO FINAL - M2.2" no prompts_dev.md
+- Registro de 8 interações detalhadas seguindo o template obrigatório (Data, Objetivo, Prompt, Padrão, Resultado)
+- Separadores claros entre cada interação
+- Nenhum commit realizado — aguardando autorização do usuário
+
+---
+
+### Documentação - Atualização dos Arquivos de Docs para Projeto Final
+**Data:** 21 de Agosto de 2026, 16:45
+
+**Objetivo:**
+Atualizar todos os arquivos de documentação existentes em /docs (architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md) para refletir a nova arquitetura do projeto final com API, UI, PostgreSQL, observabilidade, segurança e low-code.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, agora seguindo nessa mesma branch, vamos atualizar esses arquivos .md, architecture.md, langgraph.md, product.md, etc. Até pq estamos mudando a estrutura do projeto para a entrega final."
+
+**Padrão de Prompting:** Documentation Update / Architecture Alignment
+> O usuário solicitou a atualização de toda a documentação existente para alinhar com a nova arquitetura planejada para o projeto final, reconhecendo que a estrutura do projeto mudou significativamente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura de todos os arquivos de docs existentes: architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md, prompts.md, prompts_dev.md, task-completion.md, gitflow.md
+- Reescrita completa de **architecture.md**: de 4 camadas para 7 camadas (UI, API, Agente, Ferramentas, Persistencia, Observabilidade, Integracao Externa), com diagrama de fluxo atualizado incluindo paralelização e novos nos
+- Reescrita completa de **langgraph.md**: adicionados 3 novos nos (sanitize_inputs, load_history, request_approval), paralelização read_curriculum|read_job, checkpointer PostgresSaver, aresta condicional de aprovação
+- Reescrita completa de **state_schema.md**: novos campos do AgentState (history, approval_required, approval_decision, correlation_id, metadata), novos Pydantic schemas para API (AnalyzeRequest, AnalyzeResponse, HistoryItem, AnalysisRecord)
+- Reescrita completa de **tech.md**: stack atualizada (FastAPI, Streamlit, PostgreSQL, structlog, tenacity, langsmith, n8n), nova estrutura de diretorios completa, dependencias atualizadas
+- Reescrita completa de **product.md**: fluxos atualizados (CLI, Web, Low-Code), novas funcionalidades (seguranca, memoria, observabilidade, API), 2 cenarios documentados (principal + adversarial)
+- Atualização de **tasks.md**: blocos 1-8 mantidos como concluidos, blocos 9-18 adicionados com checklist detalhado e branches sugeridas
+- tools.md mantido sem alteracao significativa (as tools originais permanecem identicas)
