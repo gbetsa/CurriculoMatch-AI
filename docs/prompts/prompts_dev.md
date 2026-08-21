@@ -698,3 +698,30 @@ Atualizar todos os arquivos de documentação existentes em /docs (architecture.
 - Reescrita completa de **product.md**: fluxos atualizados (CLI, Web, Low-Code), novas funcionalidades (seguranca, memoria, observabilidade, API), 2 cenarios documentados (principal + adversarial)
 - Atualização de **tasks.md**: blocos 1-8 mantidos como concluidos, blocos 9-18 adicionados com checklist detalhado e branches sugeridas
 - tools.md mantido sem alteracao significativa (as tools originais permanecem identicas)
+
+---
+
+### Implementacao - Bloco 9: Memoria e Checkpointer PostgreSQL
+**Data:** 21 de Agosto de 2026, 17:15
+
+**Objetivo:**
+Implementar persistencia de estado entre execucoes do agente LangGraph utilizando PostgreSQL como checkpointer. Criar novo no load_history, adicionar paralelizacao read_curriculum|read_job e configurar PostgresSaver.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "A partir da develop, inicie uma branch para comecarmos a spec 9_memory.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 09, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/09-memory-checkpoint` a partir de `develop`
+- Atualizacao de `graph/state.py`: adicionados campos `history`, `correlation_id`, `metadata` ao AgentState; criado modelo Pydantic `AnalysisRecord`
+- Criacao de `graph/checkpointer.py`: funcao `create_checkpointer()` configurada via `DATABASE_URL` do `.env`, usando `ConnectionPool` e `PostgresSaver`
+- Adicao do no `load_history` em `graph/nodes.py`: gera correlation_id unico, inicializa metadata basica (timestamp, modelo)
+- Reescrita de `graph/workflow.py`: paralelizacao read_curriculum|read_job via fan-out/fan-in, checkpointer condicional (ativa apenas se `DATABASE_URL` estiver definido), aresta pos-validacao agora vai para `load_history`
+- Atualizacao de `.env.example`: adicionada variavel `DATABASE_URL` e `GROQ_MODEL`
+- Atualizacao de `requirements.txt`: versoes atualizadas para langgraph 1.2.11, langgraph-checkpoint-postgres 3.1.2, langchain-core 1.6.0, psycopg 3.3.4
+- Instalacao de dependencias: `psycopg[pool]` e `langgraph-checkpoint-postgres` instalados com sucesso
+- Teste de compilacao: grafo compila sem erros
+- Teste de regressao: 6 testes unitarios existentes passando (test_nodes + test_tools)
+- Branch aguardando commit e PR
