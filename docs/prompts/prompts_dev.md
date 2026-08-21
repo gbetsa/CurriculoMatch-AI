@@ -823,3 +823,28 @@ Documentar endpoints da API REST no README.md na secao "Tool e Integracao", conf
   - 9.3: Exemplos de uso com curl
   - 9.4: Informacoes de seguranca (rate limit, upload, CORS)
 - Atualizacao do prompts_dev.md com registro desta interacao
+
+---
+
+### Implementacao - Bloco 11: Interface Web com Streamlit
+**Data:** 21 de Agosto de 2026, 20:30
+
+**Objetivo:**
+Criar interface web com Streamlit para upload de curriculos e vagas, exibicao de resultados e comparacao de candidatos. Interface com 3 abas: Nova Analise, Historico e Comparar.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Pode seguir para a issues 11, specs 11_streamlit_ui.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 11, delegando toda a execucao tecnica a IA.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #39 (Bloco 10) na branch develop
+- Criacao da branch `feature/11-streamlit` a partir de develop
+- Criacao de `streamlit_app.py` com interface completa:
+  - **Aba 1 - Nova Analise:** upload PDF, campos de vaga, botao analisar, exibe relatorio com barra de progresso
+  - **Aba 2 - Historico:** tabela paginada com filtros por candidato e vaga, paginacao funcional
+  - **Aba 3 - Comparar:** upload multiplos PDFs, campos de vaga, botao comparar, ranking lado a lado
+- Tratamento de erros de conexao com API (mensagem amigavel)
+- Verificacao de saude do backend no carregamento
+- Atualizacao do requirements.txt: streamlit 1.45.1, requests 2.32.3
