@@ -848,3 +848,54 @@ Criar interface web com Streamlit para upload de curriculos e vagas, exibicao de
 - Tratamento de erros de conexao com API (mensagem amigavel)
 - Verificacao de saude do backend no carregamento
 - Atualizacao do requirements.txt: streamlit 1.45.1, requests 2.32.3
+
+---
+
+### Implementacao - Bloco 12: Seguranca, Governanca e Limites de Autonomia
+**Data:** 21 de Agosto de 2026, 21:15
+
+**Objetivo:**
+Implementar controles de seguranca, validacao rigorosa de entradas, sanitizacao contra prompt injection, aprovacao humana antes de acoes destrutivas e cenario adversarial demonstravel.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, agora sim pode comecar com a issue 12, spec 12_security.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 12, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #40 (Bloco 11) na branch develop
+- Criacao da branch `feature/12-security` a partir de develop
+- Criacao de `graph/security.py`:
+  - Funcao `sanitize_text()`: detecta e neutraliza padroes de prompt injection
+  - Funcao `detect_injection()`: verifica se texto contem injecoes
+  - Lista de 15+ padroes de injection conhecidos (ignore previous instructions, you are now, system:, <|im_start|>, score 100, etc.)
+- Atualizacao de `graph/nodes.py`:
+  - Adicionado no `sanitize_inputs`: sanitiza curriculo e descricao da vaga antes de enviar ao LLM
+  - Adicionado no `request_approval`: define `approval_required = True` no estado
+  - Import de `sanitize_text` de `graph/security.py`
+- Atualizacao de `graph/workflow.py`:
+  - No `sanitize_inputs` entre `validate_inputs` e `load_history`
+  - No `request_approval` entre `analyze_match` e `generate_report`
+  - Aresta condicional atualizada: `validate_inputs` -> `sanitize_inputs` (nao `load_history`)
+  - Docstring atualizado com nova estrutura do grafo
+- Atualizacao de `api/main.py`:
+  - Novo endpoint `POST /approve/{analysis_id}` para aprovacao humana
+  - Schema `ApprovalRequest` com campo `approved: bool`
+- Atualizacao de `streamlit_app.py`:
+  - Botoes "Aprovar Analise" e "Rejeitar Analise" apos exibir resultado
+  - Chamada a `POST /approve/{analysis_id}` com feedback ao usuario
+- Criacao de `tests/test_security.py`:
+  - 15 testes cobrindo sanitize_text, detect_injection e cenario adversarial
+  - Testes de injecao: ignore previous instructions, ignore all rules, you are now, system:, <|im_start|>, score 100
+  - Testes de preservacao de conteudo normal e PII
+  - Cenario adversarial completo validando que injection nao altera score
+- Atualizacao de `README.md`:
+  - Nova secao 11 "Seguranca e Autonomia" com 4 subsecoes
+  - Documentacao de sanitizacao anti-injection
+  - Documentacao de human-in-the-loop (aprovacao)
+  - Documentacao de cenario adversarial
+  - Documentacao de testes de seguranca
+- Todos os testes passando: 15 testes de seguranca + 15 testes de API + 4 testes de checkpointer + 3 testes de tools
+
+---

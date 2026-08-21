@@ -106,6 +106,55 @@ def tab_new_analysis():
 
                     render_report(result.get("report", ""), result.get("score", 0))
 
+                    # Botao de aprovacao
+                    st.markdown("---")
+                    st.subheader("Aprovacao")
+                    analysis_id = result.get("analysis_id", "")
+
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(
+                            "Aprovar Analise",
+                            type="primary",
+                            key="approve_btn",
+                            use_container_width=True,
+                        ):
+                            try:
+                                approve_response = requests.post(
+                                    f"{API_URL}/approve/{analysis_id}",
+                                    json={"approved": True},
+                                    timeout=30,
+                                )
+                                if approve_response.status_code == 200:
+                                    st.success("Analise aprovada com sucesso!")
+                                else:
+                                    st.error(
+                                        f"Erro ao aprovar: {approve_response.status_code}"
+                                    )
+                            except requests.exceptions.ConnectionError:
+                                st.error("Nao foi possivel conectar a API.")
+                    with col2:
+                        if st.button(
+                            "Rejeitar Analise",
+                            type="secondary",
+                            key="reject_btn",
+                            use_container_width=True,
+                        ):
+                            try:
+                                approve_response = requests.post(
+                                    f"{API_URL}/approve/{analysis_id}",
+                                    json={"approved": False},
+                                    timeout=30,
+                                )
+                                if approve_response.status_code == 200:
+                                    st.warning("Analise rejeitada.")
+                                else:
+                                    st.info(
+                                        f"Analise rejeitada: {approve_response.status_code}"
+                                    )
+                            except requests.exceptions.ConnectionError:
+                                st.error("Nao foi possivel conectar a API.")
+
                 elif response.status_code == 422:
                     st.error(
                         f"Erro de validacao: {response.json().get('detail', 'Erro desconhecido')}"

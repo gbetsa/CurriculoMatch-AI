@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from langchain_groq import ChatGroq
 from graph.state import AgentState, ExtractedInformation
+from graph.security import sanitize_text
 from tools.pdf_reader import read_curriculum
 from tools.job_reader import read_job
 from tools.report_writer import save_report
@@ -36,6 +37,41 @@ def validate_inputs(state: AgentState) -> AgentState:
         }
 
     return {"is_valid": True, "error_message": None}
+
+
+def sanitize_inputs(state: AgentState) -> AgentState:
+    """Sanitiza textos de entrada contra prompt injection."""
+    injection_detected = []
+
+    # Sanitizar curriculo se existir
+    curriculum_text = state.get("curriculum_text", "")
+    if curriculum_text:
+        sanitized_curriculum, detected = sanitize_text(curriculum_text)
+        if detected:
+            injection_detected.extend([f"curriculum: {d}" for d in detected])
+        state["curriculum_text"] = sanitized_curriculum
+
+    # Sanitizar descricao da vaga se existir
+    job_description = state.get("job_description", "")
+    if job_description:
+        sanitized_job, detected = sanitize_text(job_description)
+        if detected:
+            injection_detected.extend([f"job: {d}" for d in detected])
+        state["job_description"] = sanitized_job
+
+    # Atualizar metadata com injecoes detectadas
+    metadata = state.get("metadata", {})
+    if injection_detected:
+        metadata["injection_detected"] = injection_detected
+        metadata["sanitized"] = True
+    state["metadata"] = metadata
+
+    return state
+
+
+def request_approval(state: AgentState) -> AgentState:
+    """Define que a analise requer aprovacao humana antes de salvar."""
+    return {"approval_required": True}
 
 
 def load_history(state: AgentState) -> AgentState:

@@ -8,6 +8,7 @@ from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from api.dependencies import get_graph, rate_limiter, validate_file_upload
 from api.schemas import (
@@ -237,6 +238,42 @@ async def get_analysis(analysis_id: str):
     """
     # Em producao, buscar do checkpointer/PostgreSQL
     raise HTTPException(status_code=404, detail="Analise nao encontrada")
+
+
+class ApprovalRequest(BaseModel):
+    """Request para aprovacao de analise."""
+
+    approved: bool = Field(..., description="Se a analise foi aprovada")
+
+
+@app.post(
+    "/approve/{analysis_id}",
+    response_model=AnalysisResult,
+    responses={404: {"model": ErrorResponse}},
+    summary="Aprova ou rejeita uma analise pendente",
+)
+async def approve_analysis(analysis_id: str, request: ApprovalRequest):
+    """
+    Endpoint para aprovacao humana de analises.
+
+    - **analysis_id**: ID da analise a ser aprovada
+    - **approved**: True para aprovar, False para rejeitar
+    """
+    # Em producao, buscar do checkpointer/PostgreSQL
+    # Por agora, retornar erro 404 (analise nao encontrada)
+    if not request.approved:
+        raise HTTPException(status_code=400, detail="Analise rejeitada pelo usuario")
+
+    # Se aprovada, retornar status atualizado
+    return AnalysisResult(
+        analysis_id=analysis_id,
+        candidate_name="Candidato",
+        job_title="Vaga",
+        score=0,
+        report="",
+        status="approved",
+        created_at=datetime.now(),
+    )
 
 
 @app.get(
