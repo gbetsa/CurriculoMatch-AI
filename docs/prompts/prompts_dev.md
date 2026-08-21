@@ -674,3 +674,27 @@ Registrar todas as interações do projeto final no log de prompts, separando do
 - Registro de 8 interações detalhadas seguindo o template obrigatório (Data, Objetivo, Prompt, Padrão, Resultado)
 - Separadores claros entre cada interação
 - Nenhum commit realizado — aguardando autorização do usuário
+
+---
+
+### Documentação - Atualização dos Arquivos de Docs para Projeto Final
+**Data:** 21 de Agosto de 2026, 16:45
+
+**Objetivo:**
+Atualizar todos os arquivos de documentação existentes em /docs (architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md) para refletir a nova arquitetura do projeto final com API, UI, PostgreSQL, observabilidade, segurança e low-code.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, agora seguindo nessa mesma branch, vamos atualizar esses arquivos .md, architecture.md, langgraph.md, product.md, etc. Até pq estamos mudando a estrutura do projeto para a entrega final."
+
+**Padrão de Prompting:** Documentation Update / Architecture Alignment
+> O usuário solicitou a atualização de toda a documentação existente para alinhar com a nova arquitetura planejada para o projeto final, reconhecendo que a estrutura do projeto mudou significativamente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura de todos os arquivos de docs existentes: architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md, prompts.md, prompts_dev.md, task-completion.md, gitflow.md
+- Reescrita completa de **architecture.md**: de 4 camadas para 7 camadas (UI, API, Agente, Ferramentas, Persistencia, Observabilidade, Integracao Externa), com diagrama de fluxo atualizado incluindo paralelização e novos nos
+- Reescrita completa de **langgraph.md**: adicionados 3 novos nos (sanitize_inputs, load_history, request_approval), paralelização read_curriculum|read_job, checkpointer PostgresSaver, aresta condicional de aprovação
+- Reescrita completa de **state_schema.md**: novos campos do AgentState (history, approval_required, approval_decision, correlation_id, metadata), novos Pydantic schemas para API (AnalyzeRequest, AnalyzeResponse, HistoryItem, AnalysisRecord)
+- Reescrita completa de **tech.md**: stack atualizada (FastAPI, Streamlit, PostgreSQL, structlog, tenacity, langsmith, n8n), nova estrutura de diretorios completa, dependencias atualizadas
+- Reescrita completa de **product.md**: fluxos atualizados (CLI, Web, Low-Code), novas funcionalidades (seguranca, memoria, observabilidade, API), 2 cenarios documentados (principal + adversarial)
+- Atualização de **tasks.md**: blocos 1-8 mantidos como concluidos, blocos 9-18 adicionados com checklist detalhado e branches sugeridas
+- tools.md mantido sem alteracao significativa (as tools originais permanecem identicas)
