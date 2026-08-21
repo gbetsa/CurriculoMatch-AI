@@ -94,6 +94,8 @@ Requisitos:
 * **Separação Pydantic:** O esquema de extração de dados foi dividido em `habilidades` gerais e `ferramentas_projetos_experiencias` para evitar que a LLM "esquecesse" ferramentas devido a limites de output (token loss) e alucinasse gaps injustos.
 * **Early Exit / Fail-Fast:** Implementou-se arestas condicionais no LangGraph para interromper a execução antes de gastar cota da API caso o currículo ou a vaga não estejam na pasta.
 * **Regra de Ouro (Anti-Alucinação):** Forçou-se o *system prompt* do avaliador a ser complacente com variações textuais (ex: Node = Node.js).
+* **Memória Persistente (Checkpointer PostgreSQL):** Implementamos persistência de estado entre execuções utilizando PostgreSQL como checkpointer. Isso permite que o agente recupere análises anteriores de candidatos/vagas e utilize esse histórico no contexto de novas análises.
+* **Decisão Não-RAG:** Optamos por checkpointer persistente em vez de RAG (Retrieval-Augmented Generation) porque o domínio de recrutamento não requer busca semântica em base de conhecimento externa. O que se necessita é lembrar análises anteriores do mesmo candidato ou vaga — tarefa de persistência relacional, não de vetores. O checkpointer permite recuperar histórico de execuções anteriores de forma estruturada e eficiente.
 
 ## 8. Limitações da Solução
 * **PDFs como Imagens:** A ferramenta `PyMuPDF` não realiza OCR (Optical Character Recognition). Portanto, currículos exportados como imagens estáticas sem texto indexável não serão lidos adequadamente.
