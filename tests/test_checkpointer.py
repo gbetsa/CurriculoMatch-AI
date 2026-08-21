@@ -23,6 +23,7 @@ requires_postgres = pytest.mark.skipif(
 )
 
 
+@requires_postgres
 def test_checkpointer_creation():
     """Test that checkpointer can be created when DATABASE_URL is set."""
     os.environ["DATABASE_URL"] = (
