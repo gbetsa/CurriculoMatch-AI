@@ -3,18 +3,29 @@
 import re
 from typing import List, Tuple
 
-
 # Padrões de prompt injection conhecidos
 INJECTION_PATTERNS: List[Tuple[re.Pattern, str]] = [
-    (re.compile(r"ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|rules|prompts)", re.IGNORECASE), "ignore previous instructions"),
+    (
+        re.compile(
+            r"ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|rules|prompts)",
+            re.IGNORECASE,
+        ),
+        "ignore previous instructions",
+    ),
     (re.compile(r"you\s+are\s+now\s+a", re.IGNORECASE), "you are now a"),
     (re.compile(r"system\s*:", re.IGNORECASE), "system:"),
     (re.compile(r"<|im_start|>", re.IGNORECASE), "<|im_start|>"),
     (re.compile(r"ignore\s+all\s+rules", re.IGNORECASE), "ignore all rules"),
-    (re.compile(r"disregard\s+(all|any|previous)", re.IGNORECASE), "disregard previous"),
+    (
+        re.compile(r"disregard\s+(all|any|previous)", re.IGNORECASE),
+        "disregard previous",
+    ),
     (re.compile(r"forget\s+(all|any|previous)", re.IGNORECASE), "forget previous"),
     (re.compile(r"new\s+instructions?\s*:", re.IGNORECASE), "new instructions:"),
-    (re.compile(r"override\s+(all|any)?\s*(instructions?|rules?)", re.IGNORECASE), "override instructions"),
+    (
+        re.compile(r"override\s+(all|any)?\s*(instructions?|rules?)", re.IGNORECASE),
+        "override instructions",
+    ),
     (re.compile(r"you\s+must\s+ignore", re.IGNORECASE), "you must ignore"),
     (re.compile(r"do\s+not\s+follow", re.IGNORECASE), "do not follow"),
     (re.compile(r"act\s+as\s+if", re.IGNORECASE), "act as if"),
@@ -22,7 +33,12 @@ INJECTION_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r"role\s*play\s+as", re.IGNORECASE), "role play as"),
     (re.compile(r"from\s+now\s+on", re.IGNORECASE), "from now on"),
     (re.compile(r"score\s+this\s+candidate\s+(a\s+)?100", re.IGNORECASE), "score 100"),
-    (re.compile(r"give\s+(this|the)\s+candidate\s+a\s+score\s+of\s+100", re.IGNORECASE), "give score of 100"),
+    (
+        re.compile(
+            r"give\s+(this|the)\s+candidate\s+a\s+score\s+of\s+100", re.IGNORECASE
+        ),
+        "give score of 100",
+    ),
 ]
 
 
