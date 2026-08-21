@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, List, Optional, TypedDict
 from pydantic import BaseModel, Field
 
@@ -40,23 +41,40 @@ class ExtractedInformation(BaseModel):
     vaga: JobData
 
 
+class AnalysisRecord(BaseModel):
+    """Registro de uma analise anterior, persistida no checkpointer."""
+
+    analysis_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    candidate_name: str = ""
+    job_title: str = ""
+    score: int = 0
+    report: str = ""
+    created_at: str = ""
+    correlation_id: str = ""
+
+
 class AgentState(TypedDict, total=False):
-    # Entradas e Validações
+    # Entradas e Validacoes
     curriculum_path: str
     job_path: str
     is_valid: bool
     error_message: Optional[str]
 
-    # Dados Brutos Extraídos
+    # Dados Brutos Extraidos
     curriculum_text: str
     job_description: str
 
-    # Dados Estruturados (Saída da LLM na etapa de Extração)
+    # Dados Estruturados (Saida da LLM na etapa de Extracao)
     extracted_information: Dict[str, Any]
 
-    # Resultados Finais da Análise
+    # Resultados Finais da Analise
     compatibility_score: int
     analysis: str
 
-    # Saída Final
+    # Saida Final
     report: str
+
+    # --- Campos Novos (Projeto Final - Bloco 9) ---
+    history: List[Dict[str, Any]]
+    correlation_id: str
+    metadata: Dict[str, Any]

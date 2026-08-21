@@ -1,6 +1,8 @@
 import os
 import re
 import json
+import uuid
+from datetime import datetime, timezone
 from langchain_groq import ChatGroq
 from graph.state import AgentState, ExtractedInformation
 from tools.pdf_reader import read_curriculum
@@ -34,6 +36,27 @@ def validate_inputs(state: AgentState) -> AgentState:
         }
 
     return {"is_valid": True, "error_message": None}
+
+
+def load_history(state: AgentState) -> AgentState:
+    """
+    Recupera historico de analises anteriores via checkpointer.
+
+    Gera um correlation_id unico para observabilidade e inicializa
+    metadata basica da execucao.
+    """
+    correlation_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+
+    return {
+        "correlation_id": correlation_id,
+        "history": state.get("history", []),
+        "metadata": {
+            "started_at": now,
+            "correlation_id": correlation_id,
+            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        },
+    }
 
 
 def read_curriculum_node(state: AgentState) -> AgentState:

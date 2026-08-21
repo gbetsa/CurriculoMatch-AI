@@ -1,7 +1,9 @@
+import os
 from langgraph.graph import StateGraph, END
 from graph.state import AgentState
 from graph.nodes import (
     validate_inputs,
+    load_history,
     read_curriculum_node,
     read_job_node,
     extract_information,
@@ -13,36 +15,37 @@ from graph.nodes import (
 
 def route_after_validation(state: AgentState) -> str:
     """
-    Aresta condicional disparada após a validação dos arquivos de entrada.
+    Aresta condicional disparada apos a validacao dos arquivos de entrada.
 
-    Retorna o nome do próximo nó baseado no resultado da validação:
-    - 'read_curriculum' se os inputs forem válidos.
-    - END se houver erro de validação (arquivo não encontrado ou tipo incorreto).
+    Retorna o nome do proximo no baseado no resultado da validacao:
+    - 'load_history' se os inputs forem validos.
+    - END se houver erro de validacao (arquivo nao encontrado ou tipo incorreto).
     """
     if state.get("is_valid"):
-        return "read_curriculum"
+        return "load_history"
     return END
 
 
 def route_after_read(state: AgentState) -> str:
     """
-    Aresta condicional disparada após cada etapa de leitura de arquivo.
+    Aresta condicional disparada apos cada etapa de leitura de arquivo.
 
-    Garante que o fluxo principal só avança se nenhum erro de leitura ocorreu.
+    Garante que o fluxo principal so avanca se nenhum erro de leitura ocorreu.
     """
     if state.get("is_valid", True) and not state.get("error_message"):
         return "continue"
     return END
 
 
-def build_graph() -> StateGraph:
+def build_graph():
     """
-    Constrói, configura e compila o grafo de execução do agente LangGraph.
+    Constroi, configura e compila o grafo de execucao do agente LangGraph.
 
     Estrutura do Grafo:
     - Ponto de Entrada -> validate_inputs
-    - validate_inputs -> (condicional) -> read_curriculum | END
-    - read_curriculum -> (condicional) -> read_job | END
+    - validate_inputs -> (condicional) -> load_history | END
+    - load_history -> read_curriculum | read_job (PARALELO)
+    - read_curriculum -> (condicional) -> extract_information | END
     - read_job -> (condicional) -> extract_information | END
     - extract_information -> analyze_match
     - analyze_match -> generate_report
@@ -50,12 +53,13 @@ def build_graph() -> StateGraph:
     - save_report -> END
 
     Returns:
-        StateGraph: O grafo compilado e pronto para ser invocado.
+        O grafo compilado e pronto para ser invocado.
     """
     graph = StateGraph(AgentState)
 
-    # --- Registro dos Nós ---
+    # --- Registro dos Nos ---
     graph.add_node("validate_inputs", validate_inputs)
+    graph.add_node("load_history", load_history)
     graph.add_node("read_curriculum", read_curriculum_node)
     graph.add_node("read_job", read_job_node)
     graph.add_node("extract_information", extract_information)
@@ -66,22 +70,26 @@ def build_graph() -> StateGraph:
     # --- Ponto de Entrada ---
     graph.set_entry_point("validate_inputs")
 
-    # --- Aresta Condicional: Pós-validação ---
+    # --- Aresta Condicional: Pos-validacao ---
     graph.add_conditional_edges(
         "validate_inputs",
         route_after_validation,
         {
-            "read_curriculum": "read_curriculum",
+            "load_history": "load_history",
             END: END,
         },
     )
 
-    # --- Arestas Condicionais de Verificação de Leitura ---
+    # --- Paralelizacao: load_history -> [read_curriculum | read_job] ---
+    graph.add_edge("load_history", "read_curriculum")
+    graph.add_edge("load_history", "read_job")
+
+    # --- Arestas Condicionais de Verificacao de Leitura ---
     graph.add_conditional_edges(
         "read_curriculum",
         route_after_read,
         {
-            "continue": "read_job",
+            "continue": "extract_information",
             END: END,
         },
     )
@@ -101,8 +109,16 @@ def build_graph() -> StateGraph:
     graph.add_edge("generate_report", "save_report")
     graph.add_edge("save_report", END)
 
+    # --- Compilacao com ou sem Checkpointer ---
+    use_checkpointer = os.getenv("DATABASE_URL")
+    if use_checkpointer:
+        from graph.checkpointer import create_checkpointer
+
+        checkpointer = create_checkpointer()
+        return graph.compile(checkpointer=checkpointer)
+
     return graph.compile()
 
 
-# Instância compilada do grafo, pronta para ser importada pelo main.py
+# Instancia compilada do grafo, pronta para ser importada pelo main.py
 app = build_graph()
