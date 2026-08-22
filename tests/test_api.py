@@ -1,9 +1,9 @@
 """Testes unitarios para a API FastAPI."""
 
-import os
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 
 @pytest.fixture

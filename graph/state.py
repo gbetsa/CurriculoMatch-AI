@@ -1,5 +1,6 @@
 import uuid
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, TypedDict
+
 from pydantic import BaseModel, Field
 
 
@@ -7,31 +8,31 @@ class CurriculumData(BaseModel):
     nome: str = Field(description="Nome completo do candidato")
     email: str = Field(description="Endereço de e-mail do candidato")
     telefone: str = Field(description="Telefone de contato do candidato")
-    habilidades: List[str] = Field(
+    habilidades: list[str] = Field(
         description="Lista de TODAS as hard skills, competências, softwares e linguagens listadas explicitamente nas seções de 'Habilidades', 'Stacks' ou 'Skills'."
     )
-    ferramentas_projetos_experiencias: List[str] = Field(
+    ferramentas_projetos_experiencias: list[str] = Field(
         default_factory=list,
         description="Lista exaustiva de TODAS as tecnologias, bibliotecas (ex: Vite, Express), ORMs (ex: Sequelize) e ferramentas citadas DENTRO dos textos descritivos das Experiências e Projetos Realizados.",
     )
-    experiencias: List[str] = Field(
+    experiencias: list[str] = Field(
         description="Lista detalhada de cargos, empresas, atividades e PROJETOS, mantendo as tecnologias e ferramentas citadas no texto original."
     )
     formacao: str = Field(description="Nível acadêmico, graduações ou cursos listados")
-    idiomas: List[str] = Field(
+    idiomas: list[str] = Field(
         description="Idiomas mencionados e seu respectivo nível de fluência"
     )
 
 
 class JobData(BaseModel):
     cargo: str = Field(description="Nome ou título da vaga anunciada")
-    tecnologias: List[str] = Field(
+    tecnologias: list[str] = Field(
         description="Linguagens de programação, frameworks e tecnologias exigidas"
     )
-    requisitos: List[str] = Field(
+    requisitos: list[str] = Field(
         description="Requisitos técnicos e comportamentais obrigatórios"
     )
-    diferenciais: List[str] = Field(
+    diferenciais: list[str] = Field(
         description="Conhecimentos extras que contam como diferencial (Nice-to-have)"
     )
 
@@ -58,14 +59,14 @@ class AgentState(TypedDict, total=False):
     curriculum_path: str
     job_path: str
     is_valid: bool
-    error_message: Optional[str]
+    error_message: str | None
 
     # Dados Brutos Extraidos
     curriculum_text: str
     job_description: str
 
     # Dados Estruturados (Saida da LLM na etapa de Extracao)
-    extracted_information: Dict[str, Any]
+    extracted_information: dict[str, Any]
 
     # Resultados Finais da Analise
     compatibility_score: int
@@ -75,6 +76,6 @@ class AgentState(TypedDict, total=False):
     report: str
 
     # --- Campos Novos (Projeto Final - Bloco 9) ---
-    history: List[Dict[str, Any]]
+    history: list[dict[str, Any]]
     correlation_id: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]

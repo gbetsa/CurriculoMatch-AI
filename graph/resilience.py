@@ -1,8 +1,5 @@
 """Wrapper de resiliencia para chamadas LLM com retry, timeout e fallback."""
 
-import os
-from typing import Optional
-
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -47,7 +44,7 @@ def call_llm_with_retry(llm, prompt, model_name: str = "unknown"):
 
         return result
 
-    except Exception as e:
+    except Exception:
         # Log de erro
         log_llm_call(
             logger,
@@ -99,10 +96,10 @@ def call_llm_with_fallback(
                 status="fallback_success",
             )
             return result
-        except Exception as fallback_error:
+        except Exception:
             log_llm_call(
                 logger,
                 model=fallback_model,
                 status="fallback_error",
             )
-            raise fallback_error
+            raise

@@ -1,7 +1,6 @@
 """Testes de seguranca e cenario adversarial contra prompt injection."""
 
-import pytest
-from graph.security import sanitize_text, detect_injection
+from graph.security import detect_injection, sanitize_text
 
 
 class TestSanitizeText:
@@ -91,7 +90,7 @@ class TestSanitizeText:
         
         Formacao: Ciencia da Computacao
         """
-        sanitized, detected = sanitize_text(text)
+        sanitized, _detected = sanitize_text(text)
 
         assert "[SANITIZED]" in sanitized
         assert "Joao Silva" in sanitized

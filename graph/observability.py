@@ -2,8 +2,6 @@
 
 import os
 import sys
-from datetime import datetime, timezone
-from typing import Optional
 
 import structlog
 
@@ -38,7 +36,7 @@ def setup_structlog():
     )
 
 
-def get_logger(correlation_id: Optional[str] = None):
+def get_logger(correlation_id: str | None = None):
     """
     Retorna um logger estruturado com correlation_id opcional.
 
@@ -68,8 +66,8 @@ def log_node_complete(
     logger,
     node_name: str,
     status: str = "success",
-    duration_ms: Optional[float] = None,
-    extra_data: Optional[dict] = None,
+    duration_ms: float | None = None,
+    extra_data: dict | None = None,
 ):
     """Loga a conclusao de um node do grafo."""
     log_data = {
@@ -84,7 +82,7 @@ def log_node_complete(
 
 
 def log_error(
-    logger, node_name: str, error: Exception, duration_ms: Optional[float] = None
+    logger, node_name: str, error: Exception, duration_ms: float | None = None
 ):
     """Loga um erro em um node do grafo."""
     logger.error(
@@ -99,8 +97,8 @@ def log_error(
 def log_llm_call(
     logger,
     model: str,
-    tokens_used: Optional[dict] = None,
-    duration_ms: Optional[float] = None,
+    tokens_used: dict | None = None,
+    duration_ms: float | None = None,
     status: str = "success",
 ):
     """Loga uma chamada ao LLM."""

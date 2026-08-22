@@ -9,12 +9,9 @@ Uso:
     python scripts/detect_anomaly.py --real-metrics
 """
 
-import json
 import os
 import random
-import sys
 from datetime import datetime, timedelta
-from typing import Optional
 
 
 def generate_simulated_metrics(num_executions: int = 20) -> list:

@@ -1,18 +1,20 @@
+import json
 import os
 import re
-import json
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from langchain_groq import ChatGroq
-from graph.state import AgentState, ExtractedInformation
+
+from graph.observability import get_logger, log_error, log_node_complete, log_node_start
 from graph.security import sanitize_text
-from graph.observability import get_logger, log_node_start, log_node_complete, log_error
-from tools.pdf_reader import read_curriculum
-from tools.job_reader import read_job
-from tools.report_writer import save_report
-from prompts.extract_prompt import EXTRACT_PROMPT
+from graph.state import AgentState, ExtractedInformation
 from prompts.analyze_prompt import ANALYZE_PROMPT
+from prompts.extract_prompt import EXTRACT_PROMPT
+from tools.job_reader import read_job
+from tools.pdf_reader import read_curriculum
+from tools.report_writer import save_report
 
 
 def get_llm() -> ChatGroq:
@@ -128,7 +130,7 @@ def load_history(state: AgentState) -> AgentState:
     metadata basica da execucao.
     """
     correlation_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
 
     logger = get_logger(correlation_id)
     log_node_start(logger, "load_history", {})
@@ -257,7 +259,7 @@ def extract_information(state: AgentState) -> AgentState:
         log_error(logger, "extract_information", e, duration_ms)
         return {
             "is_valid": False,
-            "error_message": f"Falha na extração de dados: {str(e)}",
+            "error_message": f"Falha na extração de dados: {e!s}",
         }
 
 
@@ -319,7 +321,7 @@ def analyze_match(state: AgentState) -> AgentState:
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
         log_error(logger, "analyze_match", e, duration_ms)
-        return {"is_valid": False, "error_message": f"Falha na análise: {str(e)}"}
+        return {"is_valid": False, "error_message": f"Falha na análise: {e!s}"}
 
 
 def generate_report(state: AgentState) -> AgentState:

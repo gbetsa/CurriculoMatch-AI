@@ -13,7 +13,6 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Optional
 
 
 def load_ci_logs(log_file: str) -> list:
