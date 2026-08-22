@@ -12,8 +12,9 @@ st.set_page_config(
     layout="wide",
 )
 
-# URL da API
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+# URLs
+API_URL = os.getenv("API_URL", "http://localhost:8001")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/analyze")
 
 
 def check_api_health() -> bool:
@@ -70,7 +71,7 @@ def tab_new_analysis():
             st.error("Por favor, preencha o titulo e a descricao da vaga.")
             return
 
-        with st.spinner("Analisando curriculo... Aguarde."):
+        with st.spinner("Analisando curriculo via n8n... Aguarde."):
             try:
                 files = {
                     "curriculum": (
@@ -84,16 +85,53 @@ def tab_new_analysis():
                     "job_description": job_description,
                 }
 
-                response = requests.post(
-                    f"{API_URL}/analyze",
-                    files=files,
-                    data=data,
-                    timeout=120,
-                )
+                n8n_ok = False
+                result = None
+                response = None
 
-                if response.status_code == 200:
-                    result = response.json()
+                # Tenta via n8n primeiro
+                try:
+                    response = requests.post(
+                        N8N_WEBHOOK_URL,
+                        files=files,
+                        data=data,
+                        timeout=120,
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        n8n_ok = True
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                    pass
+
+                # Fallback: API direta se n8n indisponivel ou erro
+                if not n8n_ok or not result or result.get("error"):
+                    st.info("n8n indisponivel, chamando API diretamente...")
+                    try:
+                        response = requests.post(
+                            f"{API_URL}/analyze",
+                            files={
+                                "curriculum": (
+                                    curriculum_file.name,
+                                    curriculum_file.getvalue(),
+                                    "application/pdf",
+                                )
+                            },
+                            data=data,
+                            timeout=120,
+                        )
+                        if response.status_code == 200:
+                            result = response.json()
+                            n8n_ok = False
+                    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                        st.error("Nao foi possivel conectar a API.")
+                        return
+
+                if result and response and response.status_code == 200:
                     st.success("Analise concluida com sucesso!")
+                    if n8n_ok:
+                        st.caption("Via n8n workflow")
+                    else:
+                        st.caption("Via API direta")
 
                     # Exibir resultado
                     col1, col2, col3 = st.columns(3)

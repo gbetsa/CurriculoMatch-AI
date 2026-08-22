@@ -1,57 +1,85 @@
 {
-  "name": "CurriculoMatch - Analise Automatica",
+  "name": "CurriculoMatch - Analise Completa",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "analyze",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {}
       },
       "id": "webhook-trigger",
-      "name": "Webhook Trigger",
+      "name": "Recebe Dados",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [250, 300]
+      "position": [250, 300],
+      "webhookId": "curriculomatch-analyze"
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body;\nconst jobTitle = body.job_title || 'Nao informado';\nconst jobDesc = body.job_description || 'Nao informado';\n\nreturn [{\n  json: {\n    job_title: jobTitle,\n    job_description: jobDesc,\n    message: `Workflow recebeu: ${jobTitle} - ${jobDesc}`\n  }\n}];"
+        "jsCode": "const item = $input.first();\nconst jobTitle = item.json.body?.job_title || '';\nconst jobDescription = item.json.body?.job_description || '';\n\nconst binaryKey = Object.keys(item.binary || {})[0];\nif (!binaryKey) throw new Error('Nenhum PDF enviado');\n\nconst pdfBuffer = await this.helpers.getBinaryDataBuffer(0, binaryKey);\nconst pdfName = item.binary[binaryKey].fileName || 'curriculo.pdf';\n\nconst boundary = '----FormBoundary7MA4YWxkTrZu0gW';\nconst parts = [];\n\nparts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"curriculum\"; filename=\"${pdfName}\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n`);\nparts.push(pdfBuffer);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_title\"\\r\\n\\r\\n${jobTitle}`);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_description\"\\r\\n\\r\\n${jobDescription}`);\nparts.push(`\\r\\n--${boundary}--\\r\\n`);\n\nconst bodyParts = [];\nfor (const part of parts) {\n  if (typeof part === 'string') {\n    bodyParts.push(Buffer.from(part, 'utf-8'));\n  } else {\n    bodyParts.push(part);\n  }\n}\nconst body = Buffer.concat(bodyParts);\n\nconst response = await this.helpers.httpRequest({\n  method: 'POST',\n  url: 'http://host.docker.internal:8001/analyze',\n  headers: {\n    'Content-Type': `multipart/form-data; boundary=${boundary}`,\n  },\n  body: body,\n  json: false,\n  returnFullResponse: false,\n  timeout: 120000,\n});\n\nreturn [{ json: typeof response === 'string' ? JSON.parse(response) : response }];"
       },
-      "id": "process-data",
-      "name": "Processa Dados",
+      "id": "call-api",
+      "name": "Chama API",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [470, 300]
+      "position": [480, 300]
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n\n// Simula resultado da API\nconst score = Math.floor(Math.random() * 40) + 60;\nconst status = score >= 70 ? 'APROVADO' : 'REJEITADO';\n\nreturn [{\n  json: {\n    score: score,\n    report: `Analise para: ${data.job_title}`,\n    status: status,\n    message: `Score: ${score}/100 - ${status}`,\n    input: data\n  }\n}];"
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
       },
-      "id": "simulate-api",
-      "name": "Simula Resposta API",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [690, 300]
+      "id": "respond-webhook",
+      "name": "Responde Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [710, 200]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "channel": "#recrutamento",
+        "text": "=CurriculoMatch AI - Nova Analise\n\n*Candidato:* {{ $('Chama API').item.json.candidate_name }}\n*Vaga:* {{ $('Chama API').item.json.job_title }}\n*Score:* {{ $('Chama API').item.json.score }}/100\n*Status:* {{ $('Chama API').item.json.status }}",
+        "otherOptions": {}
+      },
+      "id": "slack-notification",
+      "name": "Notifica Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [710, 400],
+      "credentials": {
+        "slackApi": {
+          "id": "SLACK_CREDENTIAL_ID",
+          "name": "CurriculoMatch Slack"
+        }
+      }
     }
   ],
   "connections": {
-    "Webhook Trigger": {
+    "Recebe Dados": {
       "main": [
         [
           {
-            "node": "Processa Dados",
+            "node": "Chama API",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Processa Dados": {
+    "Chama API": {
       "main": [
         [
           {
-            "node": "Simula Resposta API",
+            "node": "Responde Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notifica Slack",
             "type": "main",
             "index": 0
           }

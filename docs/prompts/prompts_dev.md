@@ -1076,3 +1076,58 @@ Implementar automacao low-code com n8n para integrar o agente CurriculoMatch com
   - Documentacao
 
 ---
+
+### Correcao - Endpoint /history vazio (3 bugs)
+**Data:** 22 de Agosto de 2026, 23:10
+
+**Objetivo:**
+Corrigir o endpoint GET /history que retornava `{"items":[],"total":0}` apesar de existirem 77 checkpoints no PostgreSQL.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "O que fizemos ate agora?" (continuacao de trabalho anterior com bug no history)
+
+**Padrao de Prompting:** Systematic debugging
+> Investigacao sistematica: (1) query direta ao DB retorna 9 threads, (2) API retorna vazio sem erro, (3) verificacao de .pyc cache, (4) endpoint debug criado para diagnóstico.
+
+**Resultado e Acao (Saida da IA):**
+- **Bug 1 - Type mismatch:** O endpoint criava objetos `AnalysisResult` (com campos extras `report`, `status`) mas `HistoryResponse` esperava `HistoryItem` (sem esses campos). Pydantic rejeitava silenciosamente.
+  - Correcao: Trocar `AnalysisResult` por `HistoryItem` na construcao dos items
+- **Bug 2 - Import faltando:** `HistoryItem` nao estava no import de `api.schemas`
+  - Correcao: Adicionar `HistoryItem` ao import
+- **Bug 3 - Variavel anterior a definicao:** `report` era usada na regex de extracao de nome antes de ser definida (linha 274 vs 287)
+  - Correcao: Reordenar atribuicoes (score, report, created antes de candidate)
+- **Melhoria - Extracao de nome:** Candidato nao existia em `channel_values`, apenas no texto do report
+  - Correcao: Regex `Compatibilidade:\s*(.+?)\s+vs` extrai nome do report, com `.strip("*")` para remover markdown bold
+- **Melhoria - Titulo da vaga:** Usava `job_description[:50]` como fallback
+  - Correcao: Tenta `extracted_information.vaga.cargo` primeiro
+- **Limpeza:** Removido endpoint temporario `/debug/db`, imports inline movidos para topo do arquivo, variavel `is_valid` removida ( nao utilizada apos troca de tipo)
+- Arquivos alterados: `api/main.py`
+- 15/15 testes API passam, ruff lint clean
+
+---
+
+### Nova Funcionalidade - Script run.py (Launcher)
+**Data:** 22 de Agosto de 2026, 23:25
+
+**Objetivo:**
+Criar unico comando para iniciar API + Streamlit simultaneamente usando ambiente virtual.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Quero uma funcao para iniciar a api e a web ao mesmo tempo, pode ser usando o ambiente virtual"
+
+**Padrao de Prompting:** Direct request
+> Requisito direto com restricao clara (usar venv).
+
+**Resultado e Acao (Saida da IA):**
+- Criacao de `run.py` com as seguintes funcionalidades:
+  - `python run.py` — inicia API (porta 8001) + Streamlit (porta 8501)
+  - `python run.py --api-only` — somente API
+  - `python run.py --web-only` — somente Streamlit
+  - `python run.py --install` — apenas instala dependencias
+- Cria `.venv` automaticamente se nao existir
+- Instala `requirements.txt` se faltarem pacotes (detecta via import test)
+- Processos filhos com `CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW` (Windows)
+- `Ctrl+C` encerra ambos graceful (SIGTERM com timeout, fallback para kill)
+- Loop de monitoramento detecta crash e encerra os demais
+- Arquivos removidos: `run.bat`, `run.sh` (substituidos por run.py)
+- Ruff lint clean, 0 erros
