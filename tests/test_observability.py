@@ -59,9 +59,7 @@ class TestLogNodeComplete:
     def test_log_node_complete_with_extra_data(self):
         """Testa log de conclusao com dados extras."""
         logger = get_logger()
-        log_node_complete(
-            logger, "test_node", "success", 100.5, {"score": 85}
-        )
+        log_node_complete(logger, "test_node", "success", 100.5, {"score": 85})
 
     def test_log_node_complete_error_status(self):
         """Testa log de conclusao com status de erro."""

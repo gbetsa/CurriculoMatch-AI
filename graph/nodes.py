@@ -26,10 +26,14 @@ def validate_inputs(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "validate_inputs", {
-        "curriculum_path": state.get("curriculum_path", ""),
-        "job_path": state.get("job_path", ""),
-    })
+    log_node_start(
+        logger,
+        "validate_inputs",
+        {
+            "curriculum_path": state.get("curriculum_path", ""),
+            "job_path": state.get("job_path", ""),
+        },
+    )
 
     curr_path = state.get("curriculum_path", "")
     job_path = state.get("job_path", "")
@@ -60,10 +64,14 @@ def sanitize_inputs(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "sanitize_inputs", {
-        "curriculum_length": len(state.get("curriculum_text", "")),
-        "job_length": len(state.get("job_description", "")),
-    })
+    log_node_start(
+        logger,
+        "sanitize_inputs",
+        {
+            "curriculum_length": len(state.get("curriculum_text", "")),
+            "job_length": len(state.get("job_description", "")),
+        },
+    )
 
     injection_detected = []
 
@@ -91,9 +99,15 @@ def sanitize_inputs(state: AgentState) -> AgentState:
     state["metadata"] = metadata
 
     duration_ms = (time.time() - start_time) * 1000
-    log_node_complete(logger, "sanitize_inputs", "success", duration_ms, {
-        "injection_detected": len(injection_detected),
-    })
+    log_node_complete(
+        logger,
+        "sanitize_inputs",
+        "success",
+        duration_ms,
+        {
+            "injection_detected": len(injection_detected),
+        },
+    )
 
     return state
 
@@ -138,16 +152,26 @@ def read_curriculum_node(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "read_curriculum", {
-        "curriculum_path": state.get("curriculum_path", ""),
-    })
+    log_node_start(
+        logger,
+        "read_curriculum",
+        {
+            "curriculum_path": state.get("curriculum_path", ""),
+        },
+    )
 
     try:
         text = read_curriculum(state["curriculum_path"])
         duration_ms = (time.time() - start_time) * 1000
-        log_node_complete(logger, "read_curriculum", "success", duration_ms, {
-            "text_length": len(text),
-        })
+        log_node_complete(
+            logger,
+            "read_curriculum",
+            "success",
+            duration_ms,
+            {
+                "text_length": len(text),
+            },
+        )
         return {"curriculum_text": text}
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
@@ -160,16 +184,26 @@ def read_job_node(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "read_job", {
-        "job_path": state.get("job_path", ""),
-    })
+    log_node_start(
+        logger,
+        "read_job",
+        {
+            "job_path": state.get("job_path", ""),
+        },
+    )
 
     try:
         text = read_job(state["job_path"])
         duration_ms = (time.time() - start_time) * 1000
-        log_node_complete(logger, "read_job", "success", duration_ms, {
-            "text_length": len(text),
-        })
+        log_node_complete(
+            logger,
+            "read_job",
+            "success",
+            duration_ms,
+            {
+                "text_length": len(text),
+            },
+        )
         return {"job_description": text}
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
@@ -182,10 +216,14 @@ def extract_information(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "extract_information", {
-        "curriculum_length": len(state.get("curriculum_text", "")),
-        "job_length": len(state.get("job_description", "")),
-    })
+    log_node_start(
+        logger,
+        "extract_information",
+        {
+            "curriculum_length": len(state.get("curriculum_text", "")),
+            "job_length": len(state.get("job_description", "")),
+        },
+    )
 
     llm = get_llm().with_structured_output(ExtractedInformation)
     chain = EXTRACT_PROMPT | llm
@@ -203,9 +241,15 @@ def extract_information(state: AgentState) -> AgentState:
         )
 
         duration_ms = (time.time() - start_time) * 1000
-        log_node_complete(logger, "extract_information", "success", duration_ms, {
-            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
-        })
+        log_node_complete(
+            logger,
+            "extract_information",
+            "success",
+            duration_ms,
+            {
+                "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            },
+        )
 
         return {"extracted_information": extracted_dict}
     except Exception as e:
@@ -222,9 +266,13 @@ def analyze_match(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "analyze_match", {
-        "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
-    })
+    log_node_start(
+        logger,
+        "analyze_match",
+        {
+            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        },
+    )
 
     llm = get_llm()
     chain = ANALYZE_PROMPT | llm
@@ -257,9 +305,15 @@ def analyze_match(state: AgentState) -> AgentState:
             score = min(int(raw), 100)  # garante que não ultrapasse 100
 
         duration_ms = (time.time() - start_time) * 1000
-        log_node_complete(logger, "analyze_match", "success", duration_ms, {
-            "score": score,
-        })
+        log_node_complete(
+            logger,
+            "analyze_match",
+            "success",
+            duration_ms,
+            {
+                "score": score,
+            },
+        )
 
         return {"analysis": analysis_text, "compatibility_score": score}
     except Exception as e:
@@ -281,14 +335,20 @@ def save_report_node(state: AgentState) -> AgentState:
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
-    log_node_start(logger, "save_report", {
-        "report_length": len(state.get("report", "")),
-    })
+    log_node_start(
+        logger,
+        "save_report",
+        {
+            "report_length": len(state.get("report", "")),
+        },
+    )
 
     success = save_report(state.get("report", ""))
     if not success:
         duration_ms = (time.time() - start_time) * 1000
-        log_error(logger, "save_report", Exception("Falha ao salvar relatório"), duration_ms)
+        log_error(
+            logger, "save_report", Exception("Falha ao salvar relatório"), duration_ms
+        )
         return {
             "is_valid": False,
             "error_message": "Falha ao salvar relatório no disco.",

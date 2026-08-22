@@ -83,7 +83,9 @@ def log_node_complete(
     logger.info("node_completed", **log_data)
 
 
-def log_error(logger, node_name: str, error: Exception, duration_ms: Optional[float] = None):
+def log_error(
+    logger, node_name: str, error: Exception, duration_ms: Optional[float] = None
+):
     """Loga um erro em um node do grafo."""
     logger.error(
         "node_error",

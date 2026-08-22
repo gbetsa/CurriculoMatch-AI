@@ -70,12 +70,14 @@ def analyze_execution(logs: list) -> dict:
             duration = log.get("duration_ms", 0) or 0
             analysis["total_duration_ms"] += duration
         elif event == "node_error" and node:
-            analysis["errors"].append({
-                "node": node,
-                "error_type": log.get("error_type", "unknown"),
-                "error_message": log.get("error_message", "unknown"),
-                "timestamp": log.get("timestamp", "unknown"),
-            })
+            analysis["errors"].append(
+                {
+                    "node": node,
+                    "error_type": log.get("error_type", "unknown"),
+                    "error_message": log.get("error_message", "unknown"),
+                    "timestamp": log.get("timestamp", "unknown"),
+                }
+            )
 
     # Construir lista de nos
     for node_name in node_starts:
@@ -120,7 +122,9 @@ def generate_report(analysis: dict) -> str:
     if analysis.get("errors"):
         report.append("\n## Erros\n")
         for error in analysis["errors"]:
-            report.append(f"- **{error['node']}**: {error['error_type']} - {error['error_message']}")
+            report.append(
+                f"- **{error['node']}**: {error['error_type']} - {error['error_message']}"
+            )
 
     report.append("\n## Resumo\n")
     total_nodes = len(analysis.get("nodes", []))
@@ -158,8 +162,10 @@ def main():
         print(f"Total de execucoes encontradas: {len(executions)}\n")
         for cid, exec_logs in executions.items():
             analysis = analyze_execution(exec_logs)
-            print(f"- {cid}: {analysis.get('started_at', 'unknown')} "
-                  f"({len(exec_logs)} logs)")
+            print(
+                f"- {cid}: {analysis.get('started_at', 'unknown')} "
+                f"({len(exec_logs)} logs)"
+            )
         sys.exit(0)
 
     correlation_id = arg
