@@ -21,6 +21,9 @@ __pycache__/
 output/
 *.log
 
+# Logs estruturados
+logs/
+
 # Ferramentas e editores
 .vscode/
 .idea/
