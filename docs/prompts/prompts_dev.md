@@ -988,3 +988,50 @@ Implementar a Spec 14 (QA com IA) do projeto final, incluindo matriz de risco, p
 - Black formatting aplicado
 
 ---
+
+### Desenvolvimento - Spec 15 (DevOps e CI/CD)
+**Data:** 22 de Agosto de 2026, 18:00
+
+**Objetivo:**
+Implementar pipeline CI/CD aprimorado com GitHub Actions, Docker, analise de logs com IA e deteccao de anomalias.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Siga para a spec 15_devops.md e task bloco 15 do kanban"
+
+**Padrao de Prompting:** Task Execution
+> O usuario autorizou a implementacao da Spec 15 seguindo a especificacao documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/15-devops-anomaly` a partir de develop
+- Atualizacao de `.github/workflows/ci.yml`:
+  - Jobs separados: lint, typecheck, test-unit, test-integration, test-api, test-e2e, docker-build
+  - Dependencias configuradas para paralelismo
+  - Docker build apenas apos todos os testes passarem
+- Criacao de `Dockerfile`:
+  - Base python:3.12-slim
+  - Cache de dependencias via requirements.txt
+  - Exposicao da porta 8000
+  - Comando padrao: uvicorn
+- Criacao de `scripts/analyze_ci_logs.py`:
+  - Funcao `load_ci_logs()`: carrega logs JSONL
+  - Funcao `generate_demo_logs()`: gera logs simulados
+  - Funcao `analyze_logs()`: analisa etapas e identifica problemas
+  - Funcao `generate_report()`: gera relatorio Markdown
+  - CLI: `--demo` para logs simulados
+- Criacao de `scripts/detect_anomaly.py`:
+  - Funcao `generate_simulated_metrics()`: gera metricas simuladas
+  - Funcao `calculate_moving_average()`: media movel
+  - Funcao `detect_anomalies()`: deteccao por threshold (2σ)
+  - Funcao `estimate_trend()`: regressao linear simples
+  - Funcao `generate_report()`: gera relatorio com recomendacoes
+- Geracao de `docs/evidencias/ci_log_analysis.md` (logs simulados)
+- Geracao de `docs/evidencias/anomaly_report.md` (metricas simuladas)
+- Atualizacao de `README.md`:
+  - Nova secao 14 "DevOps e CI/CD (Spec 15)" com 5 subsecoes
+  - Pipeline CI/CD
+  - Docker
+  - Analise de logs com IA
+  - Deteccao de anomalias
+  - Evidencias
+
+---

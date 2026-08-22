@@ -266,7 +266,60 @@ pytest tests/ --cov=graph --cov=api --cov-report=term-missing
 
 ---
 
-## 14. Documentação e Histórico de Prompts
+## 14. DevOps e CI/CD (Spec 15)
+
+### 14.1. Pipeline CI/CD
+O projeto implementa um pipeline completo com GitHub Actions:
+
+| Job | Descrição | Dependências |
+|-----|-----------|--------------|
+| `lint` | Ruff + Black | - |
+| `typecheck` | MyPy (warnings) | - |
+| `test-unit` | Testes unitários | lint |
+| `test-integration` | Testes de integração | lint |
+| `test-api` | Testes de API | lint |
+| `test-e2e` | Testes E2E | test-unit, test-integration |
+| `docker-build` | Build da imagem Docker | todos os testes |
+
+### 14.2. Docker
+```bash
+# Build da imagem
+docker build -t curriculomatch-ai .
+
+# Executar
+docker run -p 8000:8000 curriculomatch-ai
+```
+
+### 14.3. Análise de Logs com IA
+`scripts/analyze_ci_logs.py` analisa logs do pipeline CI:
+```bash
+# Análise de logs reais
+python scripts/analyze_ci_logs.py logs/ci.jsonl
+
+# Demonstração com logs simulados
+python scripts/analyze_ci_logs.py --demo
+```
+
+### 14.4. Detecção de Anomalias
+`scripts/detect_anomaly.py` detecta anomalias em métricas de execução:
+```bash
+# Executar detecção
+python scripts/detect_anomaly.py
+```
+
+**Funcionalidades:**
+- Simula 20 execuções passadas com latência e taxa de erro
+- Detecta anomalias usando regra de threshold (2σ)
+- Estima tendência com regressão linear simples
+- Gera relatório em `docs/evidencias/anomaly_report.md`
+
+### 14.5. Evidências
+- `docs/evidencias/ci_log_analysis.md` - Análise de logs do CI
+- `docs/evidencias/anomaly_report.md` - Relatório de anomalias
+
+---
+
+## 15. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 
