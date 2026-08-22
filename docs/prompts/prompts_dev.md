@@ -949,3 +949,42 @@ Implementar logs estruturados (structlog), traces (LangSmith), resiliencia (tena
 - Todos os testes passando: 37 testes (15 seguranca + 15 API + 4 checkpointer + 3 tools)
 
 ---
+
+### Desenvolvimento - Spec 14 (QA com IA)
+**Data:** 22 de Agosto de 2026, 20:30
+
+**Objetivo:**
+Implementar a Spec 14 (QA com IA) do projeto final, incluindo matriz de risco, plano de testes, code review por IA, testes de integracao e testes E2E.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> Solicitacao para continuar a implementacao da Spec 14 a partir do ponto onde o usuario parou (docs/qa ja criados, testes ainda nao criados).
+
+**Padrao de Prompting:** Task-oriented
+> Direcionou a IA a completar os testes de integracao e E2E, atualizar README, e preparar para commit.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao de `tests/test_integration.py`:
+  - 12 testes de integracao com LLM mockada
+  - Testes de validacao de inputs (PDF invalido, vaga inexistente)
+  - Testes de sanitizacao de inputs (texto limpo e com injection)
+  - Testes de load_history (correlation_id unico)
+  - Testes de request_approval e generate_report
+  - Mock de LLM com RunnableLambda para extract_information e analyze_match
+  - Mock de save_report com patch
+- Criacao de `tests/test_e2e.py`:
+  - 11 testes E2E via FastAPI TestClient
+  - Testes de health check (200, JSON)
+  - Testes de analise (validacao de campos obrigatorios, rejeicao de nao-PDF)
+  - Testes de batch (validacao de curriculos)
+  - Testes de historico (200, paginacao, filtros)
+  - Testes de detalhes (404 para ID inexistente)
+- Atualizacao de `README.md`:
+  - Nova secao 13 "QA com IA (Spec 14)" com 4 subsecoes
+  - Estrategia de testes
+  - Matriz de risco
+  - Cobertura de testes (85 testes)
+  - Comandos uteis
+- Todos os testes passando: 85 testes (15 security + 15 API + 4 checkpointer + 3 tools + 26 observability + 12 integration + 11 e2e)
+- Black formatting aplicado
+
+---

@@ -223,7 +223,50 @@ O sistema implementa logs JSON estruturados para cada execução do agente:
 
 ---
 
-## 13. Documentação e Histórico de Prompts
+## 13. QA com IA (Spec 14)
+
+### 13.1. Estratégia de Testes
+O projeto implementa uma estratégia de QA que combina testes automatizados com análise assistida por IA:
+
+- **Testes Unitários:** Validação isolada de cada node, função e módulo
+- **Testes de Integração:** Validação do fluxo completo com LLM mockada
+- **Testes E2E:** Validação da API REST via TestClient
+- **Code Review com IA:** Análise automatizada de código via IA
+
+### 13.2. Matriz de Risco
+| Componente | Risco | Impacto | Prioridade |
+|------------|-------|---------|------------|
+| `validate_inputs` | Baixo | Alto | P1 |
+| `sanitize_inputs` | Alto | Crítico | P0 |
+| `extract_information` | Alto | Alto | P0 |
+| `analyze_match` | Alto | Crítico | P0 |
+| API REST | Médio | Alto | P1 |
+| Segurança | Alto | Crítico | P0 |
+
+### 13.3. Cobertura de Testes
+- **85 testes** passando em `tests/`
+- Cobertura: API (15), Security (15), Observability (26), Integration (12), E2E (11), Nodes (3), Tools (3)
+- P0s justificados em `docs/qa/test_plan.md`
+- Code review da Spec 13 em `docs/qa/ai_code_review.md`
+
+### 13.4. Comandos Úteis
+```bash
+# Rodar todos os testes (exceto checkpointer que precisa de PostgreSQL)
+pytest tests/ -v --ignore=tests/test_checkpointer.py
+
+# Rodar apenas testes de integracao
+pytest tests/test_integration.py -v
+
+# Rodar apenas testes E2E
+pytest tests/test_e2e.py -v
+
+# Verificar cobertura
+pytest tests/ --cov=graph --cov=api --cov-report=term-missing
+```
+
+---
+
+## 14. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 
