@@ -8,22 +8,15 @@ from tenacity import (
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    before_sleep_log,
 )
 
 from graph.observability import get_logger, log_llm_call
-
-
-def _get_logger():
-    """Retorna logger para uso no decorator."""
-    return get_logger()
 
 
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
     retry=retry_if_exception_type((ConnectionError, TimeoutError)),
-    before_sleep=before_sleep_log(_get_logger(), "WARNING"),
 )
 def call_llm_with_retry(llm, prompt, model_name: str = "unknown"):
     """

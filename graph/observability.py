@@ -12,6 +12,16 @@ def setup_structlog():
     """Configura structlog para logs JSON estruturados."""
     log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
+    # Mapear nome do level para numero
+    level_map = {
+        "DEBUG": 10,
+        "INFO": 20,
+        "WARNING": 30,
+        "ERROR": 40,
+        "CRITICAL": 50,
+    }
+    level_number = level_map.get(log_level, 20)
+
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
@@ -21,9 +31,7 @@ def setup_structlog():
             structlog.dev.set_exc_info,
             structlog.processors.JSONRenderer(),
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(structlog.stdlib, log_level, structlog.stdlib.INFO)
-        ),
+        wrapper_class=structlog.make_filtering_bound_logger(level_number),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(file=sys.stdout),
         cache_logger_on_first_use=True,
@@ -52,7 +60,6 @@ def log_node_start(logger, node_name: str, input_summary: dict):
     logger.info(
         "node_started",
         node=node_name,
-        event="node_started",
         input_summary=input_summary,
     )
 
@@ -67,14 +74,13 @@ def log_node_complete(
     """Loga a conclusao de um node do grafo."""
     log_data = {
         "node": node_name,
-        "event": "node_completed",
         "status": status,
         "duration_ms": duration_ms,
     }
     if extra_data:
         log_data.update(extra_data)
 
-    logger.info(**log_data)
+    logger.info("node_completed", **log_data)
 
 
 def log_error(logger, node_name: str, error: Exception, duration_ms: Optional[float] = None):
@@ -82,7 +88,6 @@ def log_error(logger, node_name: str, error: Exception, duration_ms: Optional[fl
     logger.error(
         "node_error",
         node=node_name,
-        event="node_error",
         error_type=type(error).__name__,
         error_message=str(error),
         duration_ms=duration_ms,
@@ -98,7 +103,6 @@ def log_llm_call(
 ):
     """Loga uma chamada ao LLM."""
     log_data = {
-        "event": "llm_call",
         "model": model,
         "status": status,
         "duration_ms": duration_ms,
@@ -106,7 +110,7 @@ def log_llm_call(
     if tokens_used:
         log_data["tokens_used"] = tokens_used
 
-    logger.info(**log_data)
+    logger.info("llm_call", **log_data)
 
 
 # Configurar structlog ao importar o modulo
