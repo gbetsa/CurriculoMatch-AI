@@ -899,3 +899,53 @@ Implementar controles de seguranca, validacao rigorosa de entradas, sanitizacao 
 - Todos os testes passando: 15 testes de seguranca + 15 testes de API + 4 testes de checkpointer + 3 testes de tools
 
 ---
+
+### Implementacao - Bloco 13: Observabilidade e Resiliencia
+**Data:** 22 de Agosto de 2026, 17:20
+
+**Objetivo:**
+Implementar logs estruturados (structlog), traces (LangSmith), resiliencia (tenacity) e script de investigacao para observabilidade do agente.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, a partir da Develop, siga com a implementacao dessa task, tanto no repo quanto no kanban"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 13, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #41 (Bloco 12) na branch develop
+- Criacao da branch `feature/13-observability` a partir de develop
+- Atualizacao do Kanban: issue #33 movida para "In progress"
+- Criacao de `graph/observability.py`:
+  - Configuracao de structlog para logs JSON estruturados
+  - Funcoes helper: `get_logger()`, `log_node_start()`, `log_node_complete()`, `log_error()`, `log_llm_call()`
+  - Suporte a correlation_id para correlacao de execucoes
+- Criacao de `graph/resilience.py`:
+  - Wrapper `call_llm_with_retry()` com tenacity (3 tentativas, backoff exponencial)
+  - Funcao `call_llm_with_fallback()` com fallback para LLM local
+  - Tratamento de ConnectionError e TimeoutError
+- Atualizacao de `graph/nodes.py`:
+  - Todos os 9 nodes atualizados com logging estruturado
+  - Cada node loga inicio/fim com correlation_id, duracao e status
+  - Erros logados com `log_error()` incluindo tipo e mensagem
+- Criacao de `scripts/analyze_execution.py`:
+  - Funcao `load_logs()`: carrega logs JSONL de diretorio
+  - Funcao `filter_by_correlation_id()`: filtra por ID
+  - Funcao `analyze_execution()`: analisa execucao completa
+  - Funcao `generate_report()`: gera relatorio Markdown
+  - CLI: `--all` para listar execucoes, `<correlation_id>` para investigar
+- Atualizacao de `.gitignore`: adicionado `logs/`
+- Atualizacao de `.env.example`:
+  - `LANGCHAIN_TRACING_V2=true`
+  - `LANGCHAIN_API_KEY`
+  - `LANGCHAIN_PROJECT`
+  - `LOG_LEVEL`
+- Atualizacao de `README.md`:
+  - Nova secao 12 "Observabilidade e Resiliencia" com 4 subsecoes
+  - Documentacao de logs estruturados
+  - Documentacao de traces via LangSmith
+  - Documentacao de resiliencia com tenacity
+  - Documentacao do script de investigacao
+- Todos os testes passando: 37 testes (15 seguranca + 15 API + 4 checkpointer + 3 tools)
+
+---

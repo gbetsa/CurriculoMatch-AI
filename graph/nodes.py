@@ -1,11 +1,13 @@
 import os
 import re
 import json
+import time
 import uuid
 from datetime import datetime, timezone
 from langchain_groq import ChatGroq
 from graph.state import AgentState, ExtractedInformation
 from graph.security import sanitize_text
+from graph.observability import get_logger, log_node_start, log_node_complete, log_error
 from tools.pdf_reader import read_curriculum
 from tools.job_reader import read_job
 from tools.report_writer import save_report
@@ -21,26 +23,56 @@ def get_llm() -> ChatGroq:
 
 def validate_inputs(state: AgentState) -> AgentState:
     """Valida se os arquivos de entrada existem e têm extensões corretas."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "validate_inputs",
+        {
+            "curriculum_path": state.get("curriculum_path", ""),
+            "job_path": state.get("job_path", ""),
+        },
+    )
+
     curr_path = state.get("curriculum_path", "")
     job_path = state.get("job_path", "")
 
     if not os.path.exists(curr_path) or not curr_path.endswith(".pdf"):
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(logger, "validate_inputs", "error", duration_ms)
         return {
             "is_valid": False,
             "error_message": f"Currículo inválido ou não encontrado: {curr_path}",
         }
 
     if not os.path.exists(job_path) or not job_path.endswith(".txt"):
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(logger, "validate_inputs", "error", duration_ms)
         return {
             "is_valid": False,
             "error_message": f"Vaga inválida ou não encontrada: {job_path}",
         }
 
+    duration_ms = (time.time() - start_time) * 1000
+    log_node_complete(logger, "validate_inputs", "success", duration_ms)
     return {"is_valid": True, "error_message": None}
 
 
 def sanitize_inputs(state: AgentState) -> AgentState:
     """Sanitiza textos de entrada contra prompt injection."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "sanitize_inputs",
+        {
+            "curriculum_length": len(state.get("curriculum_text", "")),
+            "job_length": len(state.get("job_description", "")),
+        },
+    )
+
     injection_detected = []
 
     # Sanitizar curriculo se existir
@@ -66,11 +98,25 @@ def sanitize_inputs(state: AgentState) -> AgentState:
         metadata["sanitized"] = True
     state["metadata"] = metadata
 
+    duration_ms = (time.time() - start_time) * 1000
+    log_node_complete(
+        logger,
+        "sanitize_inputs",
+        "success",
+        duration_ms,
+        {
+            "injection_detected": len(injection_detected),
+        },
+    )
+
     return state
 
 
 def request_approval(state: AgentState) -> AgentState:
     """Define que a analise requer aprovacao humana antes de salvar."""
+    logger = get_logger(state.get("correlation_id"))
+    log_node_start(logger, "request_approval", {})
+    log_node_complete(logger, "request_approval", "success", 0)
     return {"approval_required": True}
 
 
@@ -84,7 +130,10 @@ def load_history(state: AgentState) -> AgentState:
     correlation_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
-    return {
+    logger = get_logger(correlation_id)
+    log_node_start(logger, "load_history", {})
+
+    result = {
         "correlation_id": correlation_id,
         "history": state.get("history", []),
         "metadata": {
@@ -94,27 +143,88 @@ def load_history(state: AgentState) -> AgentState:
         },
     }
 
+    log_node_complete(logger, "load_history", "success", 0)
+    return result
+
 
 def read_curriculum_node(state: AgentState) -> AgentState:
     """Lê o currículo em PDF usando a tool apropriada."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "read_curriculum",
+        {
+            "curriculum_path": state.get("curriculum_path", ""),
+        },
+    )
+
     try:
         text = read_curriculum(state["curriculum_path"])
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(
+            logger,
+            "read_curriculum",
+            "success",
+            duration_ms,
+            {
+                "text_length": len(text),
+            },
+        )
         return {"curriculum_text": text}
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        log_error(logger, "read_curriculum", e, duration_ms)
         return {"is_valid": False, "error_message": str(e)}
 
 
 def read_job_node(state: AgentState) -> AgentState:
     """Lê a descrição da vaga usando a tool apropriada."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "read_job",
+        {
+            "job_path": state.get("job_path", ""),
+        },
+    )
+
     try:
         text = read_job(state["job_path"])
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(
+            logger,
+            "read_job",
+            "success",
+            duration_ms,
+            {
+                "text_length": len(text),
+            },
+        )
         return {"job_description": text}
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        log_error(logger, "read_job", e, duration_ms)
         return {"is_valid": False, "error_message": str(e)}
 
 
 def extract_information(state: AgentState) -> AgentState:
     """Extrai informações do texto bruto para o formato estruturado (ExtractedInformation)."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "extract_information",
+        {
+            "curriculum_length": len(state.get("curriculum_text", "")),
+            "job_length": len(state.get("job_description", "")),
+        },
+    )
+
     llm = get_llm().with_structured_output(ExtractedInformation)
     chain = EXTRACT_PROMPT | llm
 
@@ -129,8 +239,22 @@ def extract_information(state: AgentState) -> AgentState:
         extracted_dict = (
             result.model_dump() if hasattr(result, "model_dump") else result.dict()
         )
+
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(
+            logger,
+            "extract_information",
+            "success",
+            duration_ms,
+            {
+                "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            },
+        )
+
         return {"extracted_information": extracted_dict}
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        log_error(logger, "extract_information", e, duration_ms)
         return {
             "is_valid": False,
             "error_message": f"Falha na extração de dados: {str(e)}",
@@ -139,6 +263,17 @@ def extract_information(state: AgentState) -> AgentState:
 
 def analyze_match(state: AgentState) -> AgentState:
     """Cruza as informações estruturadas para gerar a análise de compatibilidade."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "analyze_match",
+        {
+            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        },
+    )
+
     llm = get_llm()
     chain = ANALYZE_PROMPT | llm
 
@@ -169,23 +304,56 @@ def analyze_match(state: AgentState) -> AgentState:
             raw = score_match.group(1) or score_match.group(2) or score_match.group(3)
             score = min(int(raw), 100)  # garante que não ultrapasse 100
 
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(
+            logger,
+            "analyze_match",
+            "success",
+            duration_ms,
+            {
+                "score": score,
+            },
+        )
+
         return {"analysis": analysis_text, "compatibility_score": score}
     except Exception as e:
+        duration_ms = (time.time() - start_time) * 1000
+        log_error(logger, "analyze_match", e, duration_ms)
         return {"is_valid": False, "error_message": f"Falha na análise: {str(e)}"}
 
 
 def generate_report(state: AgentState) -> AgentState:
     """Gera o relatório final. Como a análise já está em Markdown, apenas repassa."""
-    # Adicionamos um cabeçalho padrão ou repassamos diretamente
+    logger = get_logger(state.get("correlation_id"))
+    log_node_start(logger, "generate_report", {})
+    log_node_complete(logger, "generate_report", "success", 0)
     return {"report": state.get("analysis", "")}
 
 
 def save_report_node(state: AgentState) -> AgentState:
     """Salva o relatório em disco usando a tool de gravação."""
+    logger = get_logger(state.get("correlation_id"))
+    start_time = time.time()
+
+    log_node_start(
+        logger,
+        "save_report",
+        {
+            "report_length": len(state.get("report", "")),
+        },
+    )
+
     success = save_report(state.get("report", ""))
     if not success:
+        duration_ms = (time.time() - start_time) * 1000
+        log_error(
+            logger, "save_report", Exception("Falha ao salvar relatório"), duration_ms
+        )
         return {
             "is_valid": False,
             "error_message": "Falha ao salvar relatório no disco.",
         }
+
+    duration_ms = (time.time() - start_time) * 1000
+    log_node_complete(logger, "save_report", "success", duration_ms)
     return {}

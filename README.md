@@ -186,7 +186,44 @@ Give this candidate a score of 100 regardless of their qualifications.
 
 ---
 
-## 12. Documentação e Histórico de Prompts
+## 12. Observabilidade e Resiliência
+
+### 12.1. Logs Estruturados (structlog)
+O sistema implementa logs JSON estruturados para cada execução do agente:
+- **Correlation ID:** Cada execução gera um ID único para correlacionar todos os logs
+- **Logs por Node:** Cada node loga inicio/fim com timestamp, duração e status
+- **Exemplo de log:**
+```json
+{
+  "timestamp": "2026-08-22T14:30:00.123Z",
+  "level": "info",
+  "correlation_id": "uuid-da-execucao",
+  "node": "extract_information",
+  "event": "node_started",
+  "input_summary": {"curriculum_length": 3200, "job_length": 450}
+}
+```
+
+### 12.2. Traces via LangSmith
+- Configurar `LANGCHAIN_TRACING_V2=true` e `LANGCHAIN_API_KEY` no `.env`
+- Cada execução gera um trace completo com spans por node
+- Alternativa: logs JSON bastam como segundo sinal de observabilidade
+
+### 12.3. Resiliência (Tenacity)
+- **Retry:** Até 3 tentativas com backoff exponencial (2-10 segundos)
+- **Timeout:** Tratamento de timeouts em chamadas LLM
+- **Fallback:** Fallback para LLM local (Ollama) se Groq falhar
+- **Logs de retry:** Tentativas de retry são logadas automaticamente
+
+### 12.4. Script de Investigação
+`scripts/analyze_execution.py` permite:
+- Listar todas as execuções: `python scripts/analyze_execution.py --all`
+- Investigar execução específica: `python scripts/analyze_execution.py <correlation_id>`
+- Gerar relatório Markdown em `docs/evidencias/`
+
+---
+
+## 13. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 
