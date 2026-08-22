@@ -1035,3 +1035,44 @@ Implementar pipeline CI/CD aprimorado com GitHub Actions, Docker, analise de log
   - Evidencias
 
 ---
+
+### Desenvolvimento - Spec 16 (Low-Code com n8n)
+**Data:** 22 de Agosto de 2026, 18:30
+
+**Objetivo:**
+Implementar automacao low-code com n8n para integrar o agente CurriculoMatch com workflows de email, webhook e Slack.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Vamos seguir para a spec 16_devops.md e task bloco 16 do kanban"
+
+**Padrao de Prompting:** Task Execution
+> O usuario autorizou a implementacao da Spec 16 seguindo a especificacao documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/16-lowcode-n8n` a partir de develop
+- Criacao de `lowcode/docker-compose.n8n.yml`:
+  - Servico n8n com imagen n8nio/n8n:latest
+  - Porta 5678 exposta
+  - Credenciais basicas (admin/curriculomatch)
+  - Volumes para dados e pastas input/output
+- Criacao de `lowcode/n8n_workflow.json`:
+  - Workflow "CurriculoMatch - Analise Automatica"
+  - 6 nodes: Webhook Trigger, Chama API, Verifica Score, Slack Aprovado, Slack Rejeitado, Responder Webhook
+  - Logica de decisao: score >= 70 = aprovado
+  - Integracao com Slack via API
+- Criacao de `docs/lowcode/reproduction_guide.md`:
+  - Instrucoes de instalacao (Docker Compose e Docker Run)
+  - Instrucoes de importacao do workflow
+  - Configuracao de credenciais
+  - Instrucoes de teste
+  - Solucao de problemas
+- Atualizacao de `README.md`:
+  - Nova secao 15 "Automacao Low-Code (n8n)" com 6 subsecoes
+  - Visao geral
+  - Fluxo principal
+  - Instalacao rapida
+  - Workflow
+  - Teste
+  - Documentacao
+
+---

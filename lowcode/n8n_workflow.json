@@ -1,0 +1,185 @@
+{
+  "name": "CurriculoMatch - Analise Automatica",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analyze",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "job_title",
+              "value": "={{ $json.body.job_title }}"
+            },
+            {
+              "name": "job_description",
+              "value": "={{ $json.body.job_description }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-api",
+      "name": "Chama API CurriculoMatch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.score }}",
+              "operation": "largerEqual",
+              "value2": 70
+            }
+          ]
+        }
+      },
+      "id": "check-score",
+      "name": "Verifica Score",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#recrutamento",
+        "text": "✅ *Candidato Aprovado*\n\nScore: {{ $('Chama API CurriculoMatch').item.json.score }}/100\nVeredito: {{ $('Chama API CurriculoMatch').item.json.report }}",
+        "otherOptions": {}
+      },
+      "id": "slack-approve",
+      "name": "Slack - Aprovado",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [910, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "SLACK_CREDENTIAL_ID",
+          "name": "Slack Recrutamento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#recrutamento",
+        "text": "❌ *Candidato Não Aprovado*\n\nScore: {{ $('Chama API CurriculoMatch').item.json.score }}/100\nVeredito: {{ $('Chama API CurriculoMatch').item.json.report }}",
+        "otherOptions": {}
+      },
+      "id": "slack-reject",
+      "name": "Slack - Rejeitado",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [910, 400],
+      "credentials": {
+        "slackApi": {
+          "id": "SLACK_CREDENTIAL_ID",
+          "name": "Slack Recrutamento"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Chama API CurriculoMatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chama API CurriculoMatch": {
+      "main": [
+        [
+          {
+            "node": "Verifica Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica Score": {
+      "main": [
+        [
+          {
+            "node": "Slack - Aprovado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack - Rejeitado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Aprovado": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Rejeitado": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

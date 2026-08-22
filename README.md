@@ -319,7 +319,50 @@ python scripts/detect_anomaly.py
 
 ---
 
-## 15. Documentação e Histórico de Prompts
+## 15. Automação Low-Code (n8n)
+
+### 15.1. Visão Geral
+O projeto integra com **n8n** para automação de workflows de recrutamento. O n8n atua como orquestrador visual, enquanto a lógica principal permanece no agente Python.
+
+### 15.2. Fluxo Principal
+```
+Email/Webhook → n8n → API CurriculoMatch → Slack/Email
+```
+
+### 15.3. Instalação Rápida
+```bash
+# Iniciar n8n
+cd lowcode
+docker-compose -f docker-compose.n8n.yml up -d
+
+# Acessar interface
+http://localhost:5678
+# Login: admin / curriculomatch
+```
+
+### 15.4. Workflow
+O workflow `lowcode/n8n_workflow.json` implementa:
+- **Gatilho:** Webhook HTTP (POST /analyze)
+- **Processamento:** Chama API CurriculoMatch
+- **Decisão:** Verifica score (>= 70 = aprovado)
+- **Saída:** Mensagem Slack com resultado
+
+### 15.5. Testar
+```bash
+# Via webhook
+curl -X POST http://localhost:5678/webhook/analyze \
+  -F "job_title=Desenvolvedor Python" \
+  -F "job_description=Vaga para dev Python com Django"
+```
+
+### 15.6. Documentação
+- `docs/lowcode/reproduction_guide.md` - Guia completo de reprodução
+- `lowcode/docker-compose.n8n.yml` - Configuração Docker
+- `lowcode/n8n_workflow.json` - Workflow exportado
+
+---
+
+## 16. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 
