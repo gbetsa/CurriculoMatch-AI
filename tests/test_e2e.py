@@ -1,6 +1,7 @@
 """Testes E2E para a API REST do CurriculoMatch AI."""
 
 import io
+
 import pytest
 from fastapi.testclient import TestClient
 

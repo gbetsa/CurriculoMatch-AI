@@ -1,7 +1,6 @@
 """Schemas Pydantic para request/response da API."""
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -33,10 +32,10 @@ class BatchResult(BaseModel):
     """Resultado de analise em lote."""
 
     batch_id: str = Field(..., description="ID unico do lote")
-    results: List[AnalysisResult] = Field(
+    results: list[AnalysisResult] = Field(
         default_factory=list, description="Resultados individuais"
     )
-    ranking: List[str] = Field(
+    ranking: list[str] = Field(
         default_factory=list, description="Ranking dos candidatos por score"
     )
 
@@ -54,7 +53,7 @@ class HistoryItem(BaseModel):
 class HistoryResponse(BaseModel):
     """Response paginada do historico."""
 
-    items: List[HistoryItem] = Field(
+    items: list[HistoryItem] = Field(
         default_factory=list, description="Itens da pagina"
     )
     total: int = Field(..., description="Total de itens")

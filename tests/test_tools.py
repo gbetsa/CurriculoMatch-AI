@@ -1,6 +1,7 @@
 import pytest
-from tools.pdf_reader import read_curriculum
+
 from tools.job_reader import read_job
+from tools.pdf_reader import read_curriculum
 from tools.report_writer import save_report
 
 

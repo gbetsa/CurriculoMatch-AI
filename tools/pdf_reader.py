@@ -1,5 +1,6 @@
-import fitz  # PyMuPDF
 import os
+
+import fitz  # PyMuPDF
 
 
 def read_curriculum(file_path: str) -> str:
@@ -22,7 +23,7 @@ def read_curriculum(file_path: str) -> str:
     try:
         doc = fitz.open(file_path)
     except Exception as e:
-        raise ValueError(f"Erro ao abrir o PDF: {str(e)}")
+        raise ValueError(f"Erro ao abrir o PDF: {e!s}")
 
     text = ""
     for page in doc:

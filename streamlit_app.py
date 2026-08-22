@@ -1,9 +1,9 @@
 """Interface web Streamlit para o CurriculoMatch AI."""
 
-import streamlit as st
-import requests
 import os
-from datetime import datetime
+
+import requests
+import streamlit as st
 
 # Configuracao da pagina
 st.set_page_config(
@@ -169,7 +169,7 @@ def tab_new_analysis():
             except requests.exceptions.Timeout:
                 st.error("A requisicao expirou. Tente novamente.")
             except Exception as e:
-                st.error(f"Erro inesperado: {str(e)}")
+                st.error(f"Erro inesperado: {e!s}")
 
 
 def tab_history():
@@ -232,17 +232,15 @@ def tab_history():
                 # Paginacao
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col1:
-                    if page > 1:
-                        if st.button("Anterior"):
-                            st.session_state.history_page -= 1
-                            st.rerun()
+                    if page > 1 and st.button("Anterior"):
+                        st.session_state.history_page -= 1
+                        st.rerun()
                 with col2:
                     st.write(f"Pagina {page} de {pages} ({total} itens)")
                 with col3:
-                    if page < pages:
-                        if st.button("Proximo"):
-                            st.session_state.history_page += 1
-                            st.rerun()
+                    if page < pages and st.button("Proximo"):
+                        st.session_state.history_page += 1
+                        st.rerun()
         else:
             st.error(f"Erro ao carregar historico: {response.status_code}")
 
@@ -251,7 +249,7 @@ def tab_history():
             "Nao foi possivel conectar a API. Verifique se o backend esta rodando."
         )
     except Exception as e:
-        st.error(f"Erro inesperado: {str(e)}")
+        st.error(f"Erro inesperado: {e!s}")
 
 
 def tab_compare():
@@ -324,12 +322,11 @@ def tab_compare():
 
                     cols = st.columns(min(len(results), 3))
                     for i, r in enumerate(results):
-                        with cols[i % 3]:
-                            with st.expander(
-                                f"{r.get('candidate_name', 'N/A')} - Score: {r.get('score', 0)}"
-                            ):
-                                st.metric("Score", f"{r.get('score', 0)}/100")
-                                st.markdown(r.get("report", ""))
+                        with cols[i % 3], st.expander(
+                            f"{r.get('candidate_name', 'N/A')} - Score: {r.get('score', 0)}"
+                        ):
+                            st.metric("Score", f"{r.get('score', 0)}/100")
+                            st.markdown(r.get("report", ""))
 
                 elif response.status_code == 422:
                     st.error(
@@ -345,7 +342,7 @@ def tab_compare():
             except requests.exceptions.Timeout:
                 st.error("A requisicao expirou. Tente novamente.")
             except Exception as e:
-                st.error(f"Erro inesperado: {str(e)}")
+                st.error(f"Erro inesperado: {e!s}")
 
 
 def main():

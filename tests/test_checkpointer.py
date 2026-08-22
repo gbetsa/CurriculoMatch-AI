@@ -1,6 +1,8 @@
 import os
-import pytest
+
 import psycopg
+import pytest
+
 from graph.checkpointer import create_checkpointer
 
 
@@ -56,7 +58,7 @@ def test_checkpointer_tables_created():
     os.environ["DATABASE_URL"] = (
         "postgresql://postgres:postgres@localhost:5432/curriculomatch"
     )
-    checkpointer = create_checkpointer()
+    create_checkpointer()
 
     conn = psycopg.connect(
         "postgresql://postgres:postgres@localhost:5432/curriculomatch"

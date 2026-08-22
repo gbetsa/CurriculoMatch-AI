@@ -1,18 +1,17 @@
 """Testes de observabilidade e resiliencia."""
 
-import json
-import os
 import tempfile
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
 
 from graph.observability import (
-    setup_structlog,
     get_logger,
-    log_node_start,
-    log_node_complete,
     log_error,
     log_llm_call,
+    log_node_complete,
+    log_node_start,
+    setup_structlog,
 )
 
 
@@ -110,7 +109,7 @@ class TestResilienceModule:
 
     def test_import_resilience(self):
         """Testa que o modulo resilience pode ser importado."""
-        from graph.resilience import call_llm_with_retry, call_llm_with_fallback
+        from graph.resilience import call_llm_with_fallback, call_llm_with_retry
 
         assert call_llm_with_retry is not None
         assert call_llm_with_fallback is not None
@@ -142,8 +141,9 @@ class TestResilienceModule:
 
     def test_call_llm_with_retry_all_failures(self):
         """Testa call_llm_with_retry com todas as tentativas falhando."""
-        from graph.resilience import call_llm_with_retry
         from tenacity import RetryError
+
+        from graph.resilience import call_llm_with_retry
 
         mock_llm = MagicMock()
         mock_llm.invoke.side_effect = ConnectionError("Connection failed")
@@ -190,10 +190,10 @@ class TestAnalyzeExecutionScript:
     def test_import_script(self):
         """Testa que o script pode ser importado."""
         from scripts.analyze_execution import (
-            load_logs,
-            filter_by_correlation_id,
             analyze_execution,
+            filter_by_correlation_id,
             generate_report,
+            load_logs,
         )
 
         assert load_logs is not None

@@ -1,10 +1,10 @@
 import os
-from typing import Optional
-from psycopg_pool import ConnectionPool
+
 from langgraph.checkpoint.postgres import PostgresSaver
+from psycopg_pool import ConnectionPool
 
 
-def create_checkpointer() -> Optional[PostgresSaver]:
+def create_checkpointer() -> PostgresSaver | None:
     """
     Cria e retorna um PostgresSaver configurado via DATABASE_URL.
 

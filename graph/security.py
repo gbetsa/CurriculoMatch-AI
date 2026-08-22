@@ -1,10 +1,9 @@
 """Funcoes de sanitizacao e validacao adversarial contra prompt injection."""
 
 import re
-from typing import List, Tuple
 
 # Padrões de prompt injection conhecidos
-INJECTION_PATTERNS: List[Tuple[re.Pattern, str]] = [
+INJECTION_PATTERNS: list[tuple[re.Pattern, str]] = [
     (
         re.compile(
             r"ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|rules|prompts)",
@@ -42,7 +41,7 @@ INJECTION_PATTERNS: List[Tuple[re.Pattern, str]] = [
 ]
 
 
-def sanitize_text(text: str) -> Tuple[str, List[str]]:
+def sanitize_text(text: str) -> tuple[str, list[str]]:
     """
     Detecta e neutraliza padroes de prompt injection em texto.
 

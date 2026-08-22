@@ -1,5 +1,4 @@
-from graph.nodes import validate_inputs, analyze_match
-import pytest
+from graph.nodes import analyze_match, validate_inputs
 
 
 def test_validate_inputs_success(mocker, tmp_path):

@@ -1,22 +1,18 @@
 """Testes de integracao para o grafo completo do CurriculoMatch AI."""
 
-import os
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from langchain_core.runnables import RunnableLambda
 
 from graph.nodes import (
-    validate_inputs,
-    sanitize_inputs,
-    load_history,
-    read_curriculum_node,
-    read_job_node,
-    extract_information,
     analyze_match,
+    extract_information,
     generate_report,
-    save_report_node,
+    load_history,
     request_approval,
+    sanitize_inputs,
+    save_report_node,
+    validate_inputs,
 )
 from graph.state import AgentState
 

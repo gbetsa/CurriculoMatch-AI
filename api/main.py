@@ -3,20 +3,18 @@
 import os
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from api.dependencies import get_graph, rate_limiter, validate_file_upload
+from api.dependencies import get_graph, validate_file_upload
 from api.schemas import (
     AnalysisResult,
     BatchResult,
     ErrorResponse,
     HealthResponse,
-    HistoryItem,
     HistoryResponse,
 )
 
@@ -110,9 +108,7 @@ async def analyze_curriculum(
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao processar analise: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao processar analise: {e!s}")
     finally:
         # Limpar arquivo temporario
         if os.path.exists(temp_path):
@@ -203,8 +199,8 @@ async def analyze_batch(
 async def list_history(
     page: int = Query(1, ge=1, description="Pagina"),
     limit: int = Query(10, ge=1, le=100, description="Itens por pagina"),
-    candidate_name: Optional[str] = Query(None, description="Filtrar por nome"),
-    job_title: Optional[str] = Query(None, description="Filtrar por titulo da vaga"),
+    candidate_name: str | None = Query(None, description="Filtrar por nome"),
+    job_title: str | None = Query(None, description="Filtrar por titulo da vaga"),
 ):
     """
     Lista analises anteriores com paginacao e filtros.

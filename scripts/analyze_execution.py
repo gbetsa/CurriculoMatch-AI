@@ -5,8 +5,6 @@ import json
 import os
 import sys
 from collections import defaultdict
-from datetime import datetime
-from typing import Optional
 
 
 def load_logs(log_dir: str = "logs") -> list:
@@ -80,10 +78,10 @@ def analyze_execution(logs: list) -> dict:
             )
 
     # Construir lista de nos
-    for node_name in node_starts:
+    for node_name, node_start in node_starts.items():
         node_info = {
             "name": node_name,
-            "started_at": node_starts[node_name].get("timestamp", "unknown"),
+            "started_at": node_start.get("timestamp", "unknown"),
         }
         if node_name in node_completions:
             node_info["completed_at"] = node_completions[node_name].get(
