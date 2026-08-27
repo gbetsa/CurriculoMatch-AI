@@ -89,7 +89,7 @@ def tab_new_analysis():
                 result = None
                 response = None
 
-                # Tenta via n8n primeiro
+                # Tenta via n8n
                 try:
                     response = requests.post(
                         N8N_WEBHOOK_URL,
@@ -101,34 +101,12 @@ def tab_new_analysis():
                         result = response.json()
                         n8n_ok = True
                     elif response.status_code == 400:
-                        # n8n rejeitou (seguranca) - NAO fazer fallback
+                        # n8n rejeitou (seguranca)
                         result = response.json()
-                        n8n_ok = True  # Marca como ok para nao cair no fallback
+                        n8n_ok = True
                 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-                    pass
-
-                # Fallback: API direta se n8n indisponivel (conexao recusada)
-                if not n8n_ok or not result:
-                    st.info("n8n indisponivel, chamando API diretamente...")
-                    try:
-                        response = requests.post(
-                            f"{API_URL}/analyze",
-                            files={
-                                "curriculum": (
-                                    curriculum_file.name,
-                                    curriculum_file.getvalue(),
-                                    "application/pdf",
-                                )
-                            },
-                            data=data,
-                            timeout=120,
-                        )
-                        if response.status_code == 200:
-                            result = response.json()
-                            n8n_ok = False
-                    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-                        st.error("Nao foi possivel conectar a API.")
-                        return
+                    st.error("Nao foi possivel conectar ao n8n. Verifique se o workflow esta ativo.")
+                    return
 
                 # n8n retornou erro de seguranca (400)
                 if result and response and response.status_code == 400:
