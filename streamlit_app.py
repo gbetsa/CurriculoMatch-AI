@@ -14,7 +14,7 @@ st.set_page_config(
 
 # URLs
 API_URL = os.getenv("API_URL", "http://localhost:8001")
-N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/analyze")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook-test/analyze")
 
 
 def check_api_health() -> bool:
@@ -100,11 +100,15 @@ def tab_new_analysis():
                     if response.status_code == 200:
                         result = response.json()
                         n8n_ok = True
+                    elif response.status_code == 400:
+                        # n8n rejeitou (seguranca) - NAO fazer fallback
+                        result = response.json()
+                        n8n_ok = True  # Marca como ok para nao cair no fallback
                 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                     pass
 
-                # Fallback: API direta se n8n indisponivel ou erro
-                if not n8n_ok or not result or result.get("error"):
+                # Fallback: API direta se n8n indisponivel (conexao recusada)
+                if not n8n_ok or not result:
                     st.info("n8n indisponivel, chamando API diretamente...")
                     try:
                         response = requests.post(
@@ -125,6 +129,18 @@ def tab_new_analysis():
                     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                         st.error("Nao foi possivel conectar a API.")
                         return
+
+                # n8n retornou erro de seguranca (400)
+                if result and response and response.status_code == 400:
+                    error_msg = result.get("error", "Erro de seguranca")
+                    details = result.get("details", [])
+                    stage = result.get("stage", "desconhecido")
+                    st.error(f"**Analise bloqueada pelo n8n** — {error_msg}")
+                    st.caption(f"Etapa: {stage}")
+                    if details:
+                        for d in details:
+                            st.warning(d)
+                    return
 
                 if result and response and response.status_code == 200:
                     st.success("Analise concluida com sucesso!")
