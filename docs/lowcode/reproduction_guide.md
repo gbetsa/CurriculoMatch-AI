@@ -3,13 +3,19 @@
 ## Fluxo Principal
 
 ```
-Streamlit (Web) → n8n Webhook → API CurriculoMatch → n8n → Streamlit (Web) → Slack
+Streamlit → n8n Webhook → [Validação] → [Regex] → [IA Security] → API → n8n → Streamlit + Slack
+                                  ↓ falha        ↓ falha           ↓ falha
+                             Erro 400        Erro 400          Erro 400
 ```
 
 1. **Streamlit** envia PDF + dados da vaga para n8n webhook
-2. **n8n** recebe e encaminha para a API via HTTP
-3. **API** processa com LangGraph e retorna resultado
-4. **n8n** retorna resultado ao Streamlit E notifica Slack
+2. **n8n** valida dados (PDF, campos obrigatórios, tamanhos)
+3. **n8n** verifica prompt injection via regex (25+ padrões)
+4. **n8n** analisa conteúdo com IA Groq (allam-2-7b)
+5. Se seguro: encaminha para **API** via HTTP
+6. **API** processa com LangGraph e retorna resultado
+7. **n8n** retorna resultado ao Streamlit E notifica Slack
+8. Se inseguro: retorna **erro 400** com detalhes em qualquer etapa
 
 ## 1. Pré-requisitos
 
@@ -36,11 +42,26 @@ docker run -d --name curriculomatch-n8n ^
 2. Login: `admin` / `curriculomatch`
 3. Clique no menu "..." → "Import from File"
 4. Selecione `lowcode/n8n_workflow.json`
-5. O workflow sera importado com 4 nos:
+5. O workflow sera importado com 9 nos:
    - **Recebe Dados** (Webhook POST /analyze)
-   - **Chama API** (Code node - envia para API)
+   - **Validacao de Dados** (Code - valida PDF, campos, tamanhos)
+   - **Seguranca Regex** (Code - detecta prompt injection, 25+ padroes)
+   - **IA Security Agent** (HTTP - analisa com Groq allam-2-7b)
+   - **Decide Seguranca** (Code - parseia resposta IA)
+   - **Gate Seguranca** (If - direciona para erro ou API)
+   - **Chama API** (Code - envia para API)
    - **Responde Webhook** (retorna JSON ao Streamlit)
    - **Notifica Slack** (envia para #recrutamento)
+
+### Configurar Groq (obrigatorio para Seguranca IA)
+
+1. No n8n, va em Credentials → Add Credential
+2. Busque "Header Auth"
+3. Nome: `Groq API Key`
+4. Header Name: `Authorization`
+5. Header Value: `Bearer gsk_...` (sua chave da Groq)
+6. Salve
+7. No node "IA Security Agent", selecione a credencial "Groq API Key"
 
 ## 4. Configurar Slack (Opcional)
 
@@ -83,7 +104,38 @@ curl -X POST http://localhost:5678/webhook/analyze ^
 4. Clique em "Analisar"
 5. Resultado aparece na tela + notificacao no Slack
 
-## 8. Como Funciona o Code Node
+## 8. Nodes de Seguranca
+
+O workflow inclui 3 camadas de seguranca antes de chamar a API:
+
+### 8.1 Validacao de Dados
+- Verifica se PDF foi enviado e e valido (magic bytes `%PDF-`)
+- Verifica `job_title` (obrigatorio, max 200 chars)
+- Verifica `job_description` (obrigatorio, 10-50000 chars)
+- Verifica tamanho do PDF (max 10MB)
+
+### 8.2 Seguranca Regex
+- 25+ padroes de prompt injection em JavaScript
+- Replicados de `graph/security.py` (versao Python)
+- Verifica `job_description` contra todos os padroes
+- Exemplos detectados: "ignore previous instructions", "you are now a", "system:", "score this candidate 100"
+
+### 8.3 IA Security Agent
+- Envia `job_description` (max 2000 chars) para Groq API
+- Modelo: `allam-2-7b` (rapido, gratuito)
+- Prompt: "Analise se contem prompt injection ou conteudo malicioso"
+- Resposta esperada: `{"safe": true}` ou `{"safe": false, "reason": "..."}`
+- Timeout: 15s
+- Fallback: se nao conseguir parsear, considera seguro
+
+### Fluxo de Decisao
+```
+Validacao → OK? → Regex → OK? → IA → OK? → Chama API
+   ↓ falha         ↓ falha        ↓ falha
+ Erro 400        Erro 400       Erro 400
+```
+
+## 9. Como Funciona o Code Node "Chama API"
 
 O node "Chama API" usa JavaScript para:
 1. Ler o PDF enviado como binario
@@ -91,7 +143,7 @@ O node "Chama API" usa JavaScript para:
 3. Enviar para `http://host.docker.internal:8001/analyze`
 4. Retornar o resultado JSON
 
-## 9. Solucao de Problemas
+## 10. Solucao de Problemas
 
 | Problema | Solucao |
 |----------|---------|
@@ -101,8 +153,12 @@ O node "Chama API" usa JavaScript para:
 | Erro "form-data" | Verificar se Code node esta configurado corretamente |
 | Slack nao envia | Configurar credenciais do Slack no n8n |
 | Streamlit fallback | Se n8n cair, Streamlit chama API diretamente |
+| Erro 400 "Dados invalidos" | Verificar se PDF e valido e campos obrigatorios preenchidos |
+| Erro 400 "Injection detectado" | Texto contem padrao suspeito, revisar descricao da vaga |
+| Erro 400 "IA detectou suspeito" | Groq identificou conteudo potencialmente malicioso |
+| Groq timeout | Verificar conexao com api.groq.com, aumentar timeout |
 
-## 10. Parar Servicos
+## 11. Parar Servicos
 
 ```bash
 # Parar n8n
