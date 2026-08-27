@@ -112,12 +112,23 @@ def tab_new_analysis():
                 if result and response and response.status_code == 400:
                     error_msg = result.get("error", "Erro de seguranca")
                     details = result.get("details", [])
-                    stage = result.get("stage", "desconhecido")
-                    st.error(f"**Analise bloqueada pelo n8n** — {error_msg}")
-                    st.caption(f"Etapa: {stage}")
+                    stage = result.get("stage", "")
+
+                    # Mapear etapa para nome amigavel
+                    stage_names = {
+                        "validacao": "Validacao de Dados",
+                        "regex": "Verificacao de Seguranca",
+                        "ia_security": "Analise de IA",
+                    }
+                    stage_name = stage_names.get(stage, stage)
+
+                    st.error("Analise bloqueada pelo sistema de seguranca")
+                    st.info(f"**Motivo:** {error_msg}")
+                    st.caption(f"Etapa: {stage_name}")
                     if details:
+                        st.markdown("**Detalhes:**")
                         for d in details:
-                            st.warning(d)
+                            st.write(f"- {d}")
                     return
 
                 if result and response and response.status_code == 200:
