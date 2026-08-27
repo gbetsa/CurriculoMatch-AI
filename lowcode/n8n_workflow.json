@@ -27,16 +27,6 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first();\nconst data = item.json;\n\nif (data._security_failed) {\n  return [{ json: data }];\n}\n\nconst INJECTION_PATTERNS = [\n  { re: /ignore\\s+(all\\s+)?(previous|prior|above)\\s+(instructions|rules|prompts)/gi, desc: 'ignore previous instructions' },\n  { re: /you\\s+are\\s+now\\s+a/gi, desc: 'you are now a' },\n  { re: /system\\s*:/gi, desc: 'system:' },\n  { re: /<\\|im\\_start\\|>/gi, desc: '<|im_start|>' },\n  { re: /ignore\\s+all\\s+rules/gi, desc: 'ignore all rules' },\n  { re: /disregard\\s+(all|any|previous)/gi, desc: 'disregard previous' },\n  { re: /forget\\s+(all|any|previous)/gi, desc: 'forget previous' },\n  { re: /new\\s+instructions?\\s*:/gi, desc: 'new instructions:' },\n  { re: /override\\s+(all|any)?\\s*(instructions?|rules?)/gi, desc: 'override instructions' },\n  { re: /you\\s+must\\s+ignore/gi, desc: 'you must ignore' },\n  { re: /do\\s+not\\s+follow/gi, desc: 'do not follow' },\n  { re: /act\\s+as\\s+if/gi, desc: 'act as if' },\n  { re: /pretend\\s+you\\s+are/gi, desc: 'pretend you are' },\n  { re: /role\\s*play\\s+as/gi, desc: 'role play as' },\n  { re: /from\\s+now\\s+on/gi, desc: 'from now on' },\n  { re: /score\\s+this\\s+candidate\\s+(a\\s+)?100/gi, desc: 'score 100' },\n  { re: /give\\s+(this|the)\\s+candidate\\s+a\\s+score\\s+of\\s+100/gi, desc: 'give score of 100' },\n  { re: /ignore\\s+all\\s+previous/gi, desc: 'ignore all previous' },\n  { re: /disregard\\s+all\\s+instructions/gi, desc: 'disregard all instructions' },\n  { re: /you\\s+must\\s+answer/gi, desc: 'you must answer' },\n  { re: /output\\s+only\\s+/gi, desc: 'output only' },\n  { re: /repeat\\s+after\\s+me/gi, desc: 'repeat after me' },\n  { re: /what\\s+are\\s+your\\s+instructions/gi, desc: 'what are your instructions' },\n  { re: /reveal\\s+your\\s+(system|initial)\\s+prompt/gi, desc: 'reveal system prompt' },\n];\n\nconst textsToCheck = [\n  { label: 'job_title', text: data.job_title || '' },\n  { label: 'job_description', text: data.job_description || '' },\n];\n\nconst detected = [];\nfor (const { label, text } of textsToCheck) {\n  for (const { re, desc } of INJECTION_PATTERNS) {\n    re.lastIndex = 0;\n    if (re.test(text)) {\n      detected.push({ field: label, pattern: desc });\n    }\n  }\n}\n\nif (detected.length > 0) {\n  return [{ json: { _security_failed: true, _stage: 'regex', error: 'Conteudo bloqueado por seguranca', details: detected.map(d => `${d.field}: padrao suspicious detectado (\"${d.pattern}\")`) } }];\n}\n\nreturn [{ json: data }];"
-      },
-      "id": "security-regex",
-      "name": "Seguranca Regex",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [440, 300]
-    },
-    {
-      "parameters": {
         "conditions": {
           "boolean": [
             {
@@ -50,7 +40,7 @@
       "name": "Ja Falhou?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [660, 300]
+      "position": [440, 300]
     },
     {
       "parameters": {
@@ -62,7 +52,7 @@
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [880, 400]
+      "position": [660, 400]
     },
     {
       "parameters": {
@@ -76,7 +66,7 @@
       "name": "Groq Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
-      "position": [880, 600],
+      "position": [660, 600],
       "credentials": {
         "groqApi": {
           "id": "GROQ_CREDENTIAL_ID",
@@ -92,7 +82,7 @@
       "name": "Decide Seguranca",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1100, 300]
+      "position": [880, 300]
     },
     {
       "parameters": {
@@ -109,7 +99,7 @@
       "name": "Gate Seguranca",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1320, 300]
+      "position": [1100, 300]
     },
     {
       "parameters": {
@@ -123,7 +113,7 @@
       "name": "Erro Seguranca",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1540, 200]
+      "position": [1320, 200]
     },
     {
       "parameters": {
@@ -133,7 +123,7 @@
       "name": "Chama API",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1540, 400]
+      "position": [1320, 400]
     },
     {
       "parameters": {
@@ -145,7 +135,7 @@
       "name": "Responde Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1760, 300]
+      "position": [1540, 300]
     }
   ],
   "connections": {
@@ -161,17 +151,6 @@
       ]
     },
     "Validacao de Dados": {
-      "main": [
-        [
-          {
-            "node": "Seguranca Regex",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Seguranca Regex": {
       "main": [
         [
           {
