@@ -319,7 +319,51 @@ python scripts/detect_anomaly.py
 
 ---
 
-## 15. Documentação e Histórico de Prompts
+## 15. Guardrails n8n (Segurança)
+
+### 15.1. Visão Geral
+O n8n funciona como camada de **guardrails** entre o Streamlit e a API. Todo request passa pelo n8n antes de chegar ao LangGraph. O n8n valida dados, detecta prompt injection via IA (Groq), e rejeita requests suspeitos com erro 400.
+
+### 15.2. Fluxo Principal
+```
+Streamlit → n8n Webhook → [Validação] → [IA Agent] → [Gate] → API → Streamlit
+                                ↓ falha       ↓ falha
+                           Erro 400       Erro 400
+```
+
+### 15.3. Instalação Rápida
+```bash
+# Iniciar n8n
+cd lowcode
+docker-compose -f docker-compose.n8n.yml up -d
+
+# Acessar interface
+http://localhost:5678
+# Login: admin / curriculomatch
+```
+
+### 15.4. Nodes do Workflow
+O workflow `lowcode/n8n_workflow.json` implementa:
+- **Recebe Dados:** Webhook HTTP (POST /analyze)
+- **Validação de Dados:** Verifica PDF (magic bytes, tamanho), campos obrigatórios
+- **Ja Falhou?:** Se validação já rejeitou, pula AI Agent
+- **AI Agent:** Analisa título + descrição com Groq (detecta prompt injection)
+- **Decide Seguranca:** Parseia resposta da IA
+- **Gate Seguranca:** Redireciona para erro (400) ou API
+- **Chama API:** Envia multipart para API CurriculoMatch
+- **Responde Webhook:** Retorna JSON ao Streamlit
+
+### 15.5. Credenciais Necessárias
+- **Groq API** (Header Auth): `Authorization: Bearer gsk_...`
+
+### 15.6. Documentação
+- `docs/lowcode/reproduction_guide.md` - Guia completo de reprodução
+- `lowcode/docker-compose.n8n.yml` - Configuração Docker
+- `lowcode/n8n_workflow.json` - Workflow exportado
+
+---
+
+## 16. Documentação e Histórico de Prompts
 Todas as interações realizadas com a IA, as técnicas de prompting utilizadas e os resultados gerados durante o desenvolvimento e evolução do projeto estão rigorosamente documentados em:
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 

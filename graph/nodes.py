@@ -19,7 +19,7 @@ from tools.report_writer import save_report
 
 def get_llm() -> ChatGroq:
     """Inicializa e retorna o modelo LLM do Groq configurado."""
-    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
     return ChatGroq(model=model_name, temperature=0)
 
 
@@ -267,6 +267,14 @@ def analyze_match(state: AgentState) -> AgentState:
     """Cruza as informações estruturadas para gerar a análise de compatibilidade."""
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
+
+    if not state.get("extracted_information"):
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(logger, "analyze_match", "error", duration_ms)
+        return {
+            "is_valid": False,
+            "error_message": "Dados nao extraidos: extracted_information ausente",
+        }
 
     log_node_start(
         logger,

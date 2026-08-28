@@ -12,8 +12,9 @@ st.set_page_config(
     layout="wide",
 )
 
-# URL da API
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+# URLs
+API_URL = os.getenv("API_URL", "http://localhost:8001")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/analyze")
 
 
 def check_api_health() -> bool:
@@ -70,7 +71,7 @@ def tab_new_analysis():
             st.error("Por favor, preencha o titulo e a descricao da vaga.")
             return
 
-        with st.spinner("Analisando curriculo... Aguarde."):
+        with st.spinner("Analisando curriculo via n8n... Aguarde."):
             try:
                 files = {
                     "curriculum": (
@@ -84,16 +85,63 @@ def tab_new_analysis():
                     "job_description": job_description,
                 }
 
-                response = requests.post(
-                    f"{API_URL}/analyze",
-                    files=files,
-                    data=data,
-                    timeout=120,
-                )
+                n8n_ok = False
+                result = None
+                response = None
 
-                if response.status_code == 200:
-                    result = response.json()
+                # Tenta via n8n
+                try:
+                    response = requests.post(
+                        N8N_WEBHOOK_URL,
+                        files=files,
+                        data=data,
+                        timeout=120,
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        n8n_ok = True
+                    elif response.status_code == 400:
+                        # n8n rejeitou (seguranca)
+                        result = response.json()
+                        n8n_ok = True
+                except (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                ):
+                    st.error(
+                        "Nao foi possivel conectar ao n8n. Verifique se o workflow esta ativo."
+                    )
+                    return
+
+                # n8n retornou erro de seguranca (400)
+                if result and response and response.status_code == 400:
+                    error_msg = result.get("error", "Erro de seguranca")
+                    details = result.get("details", [])
+                    stage = result.get("stage", "")
+
+                    # Mapear etapa para nome amigavel
+                    stage_names = {
+                        "validacao": "Validacao de Dados",
+                        "regex": "Verificacao de Seguranca",
+                        "ia_security": "Analise de IA",
+                    }
+                    stage_name = stage_names.get(stage, stage)
+
+                    st.error("Analise bloqueada pelo sistema de seguranca")
+                    st.info(f"**Motivo:** {error_msg}")
+                    st.caption(f"Etapa: {stage_name}")
+                    if details:
+                        st.markdown("**Detalhes:**")
+                        for d in details:
+                            st.write(f"- {d}")
+                    return
+
+                if result and response and response.status_code == 200:
                     st.success("Analise concluida com sucesso!")
+                    if n8n_ok:
+                        st.caption("Via n8n workflow")
+                    else:
+                        st.caption("Via API direta")
 
                     # Exibir resultado
                     col1, col2, col3 = st.columns(3)

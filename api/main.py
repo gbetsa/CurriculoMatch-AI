@@ -1,8 +1,14 @@
 """API REST principal para o CurriculoMatch AI."""
 
 import os
+import re
 import uuid
 from datetime import datetime
+
+import psycopg
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +21,7 @@ from api.schemas import (
     BatchResult,
     ErrorResponse,
     HealthResponse,
+    HistoryItem,
     HistoryResponse,
 )
 
@@ -71,37 +78,43 @@ async def analyze_curriculum(
 
     # Salvar curriculo temporariamente
     analysis_id = str(uuid.uuid4())
-    temp_path = f"temp_{analysis_id}.pdf"
+    temp_curr_path = f"temp_curriculum_{analysis_id}.pdf"
+    temp_job_path = f"temp_job_{analysis_id}.txt"
 
     try:
         content = await curriculum.read()
-        with open(temp_path, "wb") as f:
+        with open(temp_curr_path, "wb") as f:
             f.write(content)
+
+        with open(temp_job_path, "w", encoding="utf-8") as f:
+            f.write(job_description)
 
         # Executar grafo
         graph = get_graph()
         initial_state = {
-            "curriculum_path": temp_path,
-            "job_path": None,
+            "curriculum_path": temp_curr_path,
+            "job_path": temp_job_path,
             "job_title": job_title,
             "job_description": job_description,
             "is_valid": True,
         }
 
-        result = graph.invoke(initial_state)
+        config = {"configurable": {"thread_id": analysis_id}}
+        result = graph.invoke(initial_state, config=config)
 
         # Extrair nome do candidato
         candidate_name = "Candidato"
-        if result.get("extracted_curriculum"):
-            candidate_name = (
-                result["extracted_curriculum"].get("name", "Candidato") or "Candidato"
-            )
+        if result.get("candidate_name"):
+            candidate_name = result["candidate_name"]
+        elif result.get("extracted_information"):
+            extracted = result["extracted_information"]
+            candidate_name = extracted.get("candidato", {}).get("nome", "Candidato")
 
         return AnalysisResult(
             analysis_id=analysis_id,
             candidate_name=candidate_name,
             job_title=job_title,
-            score=result.get("match_analysis", {}).get("score", 0),
+            score=result.get("compatibility_score", 0),
             report=result.get("report", ""),
             status="completed",
             created_at=datetime.now(),
@@ -110,9 +123,10 @@ async def analyze_curriculum(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar analise: {e!s}")
     finally:
-        # Limpar arquivo temporario
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        # Limpar arquivos temporarios
+        for p in (temp_curr_path, temp_job_path):
+            if os.path.exists(p):
+                os.remove(p)
 
 
 @app.post(
@@ -139,37 +153,42 @@ async def analyze_batch(
         validate_file_upload(curriculum)
 
         analysis_id = str(uuid.uuid4())
-        temp_path = f"temp_{analysis_id}.pdf"
+        temp_curr_path = f"temp_curriculum_{analysis_id}.pdf"
+        temp_job_path = f"temp_job_{analysis_id}.txt"
 
         try:
             content = await curriculum.read()
-            with open(temp_path, "wb") as f:
+            with open(temp_curr_path, "wb") as f:
                 f.write(content)
+
+            with open(temp_job_path, "w", encoding="utf-8") as f:
+                f.write(job_description)
 
             graph = get_graph()
             initial_state = {
-                "curriculum_path": temp_path,
-                "job_path": None,
+                "curriculum_path": temp_curr_path,
+                "job_path": temp_job_path,
                 "job_title": job_title,
                 "job_description": job_description,
                 "is_valid": True,
             }
 
-            result = graph.invoke(initial_state)
+            config = {"configurable": {"thread_id": analysis_id}}
+            result = graph.invoke(initial_state, config=config)
 
             candidate_name = "Candidato"
-            if result.get("extracted_curriculum"):
-                candidate_name = (
-                    result["extracted_curriculum"].get("name", "Candidato")
-                    or "Candidato"
-                )
+            if result.get("candidate_name"):
+                candidate_name = result["candidate_name"]
+            elif result.get("extracted_information"):
+                extracted = result["extracted_information"]
+                candidate_name = extracted.get("candidato", {}).get("nome", "Candidato")
 
             results.append(
                 AnalysisResult(
                     analysis_id=analysis_id,
                     candidate_name=candidate_name,
                     job_title=job_title,
-                    score=result.get("match_analysis", {}).get("score", 0),
+                    score=result.get("compatibility_score", 0),
                     report=result.get("report", ""),
                     status="completed",
                     created_at=datetime.now(),
@@ -177,8 +196,9 @@ async def analyze_batch(
             )
 
         finally:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+            for p in (temp_curr_path, temp_job_path):
+                if os.path.exists(p):
+                    os.remove(p)
 
     # Ordenar por score (decrescente)
     results.sort(key=lambda x: x.score, reverse=True)
@@ -210,14 +230,93 @@ async def list_history(
     - **candidate_name**: Filtrar por nome do candidato
     - **job_title**: Filtrar por titulo da vaga
     """
-    # Em producao, buscar do checkpointer/PostgreSQL
-    # Por agora, retornar lista vazia
-    return HistoryResponse(
-        items=[],
-        total=0,
-        page=page,
-        pages=0,
-    )
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        return HistoryResponse(items=[], total=0, page=page, pages=0)
+
+    try:
+        conn = psycopg.connect(database_url)
+        cur = conn.cursor()
+
+        # Buscar checkpoints unicos (cada thread_id = 1 analise)
+        query = """
+            SELECT DISTINCT thread_id
+            FROM checkpoints
+            WHERE thread_id NOT LIKE 'test-%'
+            ORDER BY thread_id
+        """
+        cur.execute(query)
+        thread_ids = [row[0] for row in cur.fetchall()]
+
+        items = []
+        for tid in thread_ids:
+            # Buscar ultimo checkpoint da thread
+            cur.execute(
+                """
+                SELECT checkpoint FROM checkpoints
+                WHERE thread_id = %s
+                ORDER BY checkpoint_id DESC LIMIT 1
+                """,
+                (tid,),
+            )
+            row = cur.fetchone()
+            if not row:
+                continue
+
+            cp = row[0]
+            # O checkpoint contem o estado final do grafo
+            state = cp.get("channel_values", {})
+
+            score = state.get("compatibility_score", 0)
+            report = state.get("report", "")
+            created = cp.get("ts", "")
+
+            candidate = state.get("candidate_name", "")
+            if not candidate:
+                # Extrair do report: "# Análise de Compatibilidade: <Nome> vs"
+                match = re.search(r"Compatibilidade:\s*(.+?)\s+vs", report)
+                if match:
+                    candidate = match.group(1).strip().strip("*")
+                else:
+                    candidate = "Candidato"
+            job = state.get("job_description", "")[:50]
+            # Tentar pegar titulo estruturado
+            ei = state.get("extracted_information")
+            if ei and isinstance(ei, dict):
+                vaga = ei.get("vaga", {})
+                if isinstance(vaga, dict) and vaga.get("cargo"):
+                    job = vaga["cargo"]
+
+            # Filtrar se necessario
+            if candidate_name and candidate_name.lower() not in candidate.lower():
+                continue
+            if job_title and job_title.lower() not in job.lower():
+                continue
+
+            items.append(
+                HistoryItem(
+                    analysis_id=tid,
+                    candidate_name=candidate,
+                    job_title=job,
+                    score=score,
+                    created_at=created,
+                )
+            )
+
+        cur.close()
+        conn.close()
+
+        # Paginacao
+        total = len(items)
+        pages = max(1, (total + limit - 1) // limit)
+        start = (page - 1) * limit
+        end = start + limit
+        paginated = items[start:end]
+
+        return HistoryResponse(items=paginated, total=total, page=page, pages=pages)
+
+    except Exception:
+        return HistoryResponse(items=[], total=0, page=page, pages=0)
 
 
 @app.get(
@@ -232,8 +331,47 @@ async def get_analysis(analysis_id: str):
 
     - **analysis_id**: ID da analise
     """
-    # Em producao, buscar do checkpointer/PostgreSQL
-    raise HTTPException(status_code=404, detail="Analise nao encontrada")
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise HTTPException(status_code=404, detail="Analise nao encontrada")
+
+    try:
+        conn = psycopg.connect(database_url)
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT checkpoint FROM checkpoints
+            WHERE thread_id = %s
+            ORDER BY checkpoint_id DESC LIMIT 1
+            """,
+            (analysis_id,),
+        )
+        row = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Analise nao encontrada")
+
+        cp = row[0]
+        state = cp.get("channel_values", {})
+
+        return AnalysisResult(
+            analysis_id=analysis_id,
+            candidate_name=state.get("candidate_name", "Candidato"),
+            job_title=state.get("job_title", ""),
+            score=state.get("compatibility_score", 0),
+            report=state.get("report", ""),
+            status="completed" if state.get("is_valid", True) else "failed",
+            created_at=cp.get("ts", ""),
+        )
+
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Analise nao encontrada")
 
 
 class ApprovalRequest(BaseModel):
