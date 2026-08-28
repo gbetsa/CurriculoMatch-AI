@@ -123,12 +123,7 @@ def request_approval(state: AgentState) -> AgentState:
 
 
 def load_history(state: AgentState) -> AgentState:
-    """
-    Recupera historico de analises anteriores via checkpointer.
-
-    Gera um correlation_id unico para observabilidade e inicializa
-    metadata basica da execucao.
-    """
+    """Gera correlation_id e inicializa metadata. Historico e buscado no analyze_match."""
     correlation_id = str(uuid.uuid4())
     now = datetime.now(UTC).isoformat()
 
@@ -264,7 +259,7 @@ def extract_information(state: AgentState) -> AgentState:
 
 
 def analyze_match(state: AgentState) -> AgentState:
-    """Cruza as informações estruturadas para gerar a análise de compatibilidade."""
+    """Cruza as informacoes estruturadas para gerar a analise de compatibilidade."""
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
@@ -293,17 +288,63 @@ def analyze_match(state: AgentState) -> AgentState:
         indent=2,
     )
     vaga_json = json.dumps(
-        state["extracted_information"].get("vaga", {}), ensure_ascii=False, indent=2
+        state["extracted_information"].get("vaga", {}),
+        ensure_ascii=False,
+        indent=2,
     )
+
+    # Buscar historico de analises similares
+    from graph.history_query import query_similar_analyses
+
+    candidato = state["extracted_information"].get("candidato", {})
+    candidate_name = candidato.get("nome", "") if isinstance(candidato, dict) else ""
+
+    vaga = state["extracted_information"].get("vaga", {})
+    job_title = vaga.get("cargo", "") if isinstance(vaga, dict) else ""
+
+    history_records = query_similar_analyses(
+        candidate_name=candidate_name,
+        job_title=job_title,
+        score=0,
+        limit=5,
+    )
+    history = [r.model_dump() for r in history_records]
+
+    # Formatar historico para o prompt
+    if history:
+        history_lines = [
+            "## Analises Anteriores Similares",
+            "Use como referencia para manter consistencia e comparar resultados:",
+            "",
+        ]
+        for i, h in enumerate(history, 1):
+            cand = h.get("candidate_name", "Candidato")
+            job = h.get("job_title", "Vaga")
+            sc = h.get("score", 0)
+            created = h.get("created_at", "")[:10]
+            report_excerpt = h.get("report", "")[:200]
+            history_lines.append(f"### Analise {i}: {cand} vs {job}")
+            history_lines.append(f"- Score: {sc}/100")
+            history_lines.append(f"- Data: {created}")
+            history_lines.append(f"- Resumo: {report_excerpt}...")
+            history_lines.append("")
+        history_context = "\n".join(history_lines)
+        history_instruction = "O ITEM 5 OBRIGATÓRIO do relatório deve conter a comparação com as análises anteriores listadas acima."
+    else:
+        history_context = ""
+        history_instruction = ""
 
     try:
         result = chain.invoke(
-            {"candidato_data": candidato_json, "vaga_data": vaga_json}
+            {
+                "candidato_data": candidato_json,
+                "vaga_data": vaga_json,
+                "history_context": history_context,
+                "history_instruction": history_instruction,
+            }
         )
         analysis_text = result.content
 
-        # Extrai o score numérico do texto Markdown gerado pela LLM.
-        # Suporta formatos como: "85/100", "Score: 85", "pontuação: 85", "85 de 100".
         score_match = re.search(
             r"(\d{1,3})\s*(?:/|de)\s*100|score[^\d]*(\d{1,3})|pontua[çc][aã]o[^\d]*(\d{1,3})",
             analysis_text,
@@ -312,7 +353,7 @@ def analyze_match(state: AgentState) -> AgentState:
         score = 0
         if score_match:
             raw = score_match.group(1) or score_match.group(2) or score_match.group(3)
-            score = min(int(raw), 100)  # garante que não ultrapasse 100
+            score = min(int(raw), 100)
 
         duration_ms = (time.time() - start_time) * 1000
         log_node_complete(
@@ -322,6 +363,7 @@ def analyze_match(state: AgentState) -> AgentState:
             duration_ms,
             {
                 "score": score,
+                "history_used": len(history),
             },
         )
 
@@ -329,7 +371,7 @@ def analyze_match(state: AgentState) -> AgentState:
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
         log_error(logger, "analyze_match", e, duration_ms)
-        return {"is_valid": False, "error_message": f"Falha na análise: {e!s}"}
+        return {"is_valid": False, "error_message": f"Falha na analise: {e!s}"}
 
 
 def generate_report(state: AgentState) -> AgentState:
