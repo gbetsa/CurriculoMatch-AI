@@ -319,14 +319,16 @@ python scripts/detect_anomaly.py
 
 ---
 
-## 15. Automação Low-Code (n8n)
+## 15. Guardrails n8n (Segurança)
 
 ### 15.1. Visão Geral
-O projeto integra com **n8n** para automação de workflows de recrutamento. O n8n atua como orquestrador visual, enquanto a lógica principal permanece no agente Python.
+O n8n funciona como camada de **guardrails** entre o Streamlit e a API. Todo request passa pelo n8n antes de chegar ao LangGraph. O n8n valida dados, detecta prompt injection via IA (Groq), e rejeita requests suspeitos com erro 400.
 
 ### 15.2. Fluxo Principal
 ```
-Email/Webhook → n8n → API CurriculoMatch → Slack/Email
+Streamlit → n8n Webhook → [Validação] → [IA Agent] → [Gate] → API → Streamlit
+                                ↓ falha       ↓ falha
+                           Erro 400       Erro 400
 ```
 
 ### 15.3. Instalação Rápida
@@ -340,20 +342,19 @@ http://localhost:5678
 # Login: admin / curriculomatch
 ```
 
-### 15.4. Workflow
+### 15.4. Nodes do Workflow
 O workflow `lowcode/n8n_workflow.json` implementa:
-- **Gatilho:** Webhook HTTP (POST /analyze)
-- **Processamento:** Chama API CurriculoMatch
-- **Decisão:** Verifica score (>= 70 = aprovado)
-- **Saída:** Mensagem Slack com resultado
+- **Recebe Dados:** Webhook HTTP (POST /analyze)
+- **Validação de Dados:** Verifica PDF (magic bytes, tamanho), campos obrigatórios
+- **Ja Falhou?:** Se validação já rejeitou, pula AI Agent
+- **AI Agent:** Analisa título + descrição com Groq (detecta prompt injection)
+- **Decide Seguranca:** Parseia resposta da IA
+- **Gate Seguranca:** Redireciona para erro (400) ou API
+- **Chama API:** Envia multipart para API CurriculoMatch
+- **Responde Webhook:** Retorna JSON ao Streamlit
 
-### 15.5. Testar
-```bash
-# Via webhook
-curl -X POST http://localhost:5678/webhook/analyze \
-  -F "job_title=Desenvolvedor Python" \
-  -F "job_description=Vaga para dev Python com Django"
-```
+### 15.5. Credenciais Necessárias
+- **Groq API** (Header Auth): `Authorization: Bearer gsk_...`
 
 ### 15.6. Documentação
 - `docs/lowcode/reproduction_guide.md` - Guia completo de reprodução

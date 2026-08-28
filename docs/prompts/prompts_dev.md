@@ -1178,3 +1178,34 @@ Adicionar camada de seguranca no workflow n8n antes de chamar a API, incluindo v
   - Configuracao do Groq (credencial Header Auth)
   - Troubleshooting expandido com erros de seguranca
 - Arquivo: `lowcode/n8n_workflow.json` reescrito com 9 nodes
+
+---
+
+### Refactor - n8n como Guardrails (sem Regex, AI Agent unico)
+**Data:** 23 de Agosto de 2026, 00:30
+
+**Objetivo:**
+Refatorar o workflow n8n para funcionar como guardrails de seguranca, removendo o node Regex e deixando o AI Agent como unico detector de prompt injection.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "A ideia é que o node AI faça a verificação de prompt injection e no momento o regex esta fazendo isso"
+
+**Padrao de Prompting:** Refactor request
+> Usuario definiu que o AI Agent deve ser o responsavel unico por seguranca, removendo redundancia com regex.
+
+**Resultado e Acao (Saida da IA):**
+- Remocao do node "Seguranca Regex" do workflow
+- Fluxo simplificado: Recebe → Validacao → Ja Falhou? → AI Agent → Decide → Gate → (API ou Erro)
+- Correcao de multiplos bugs durante integracao:
+  - **Binario perdido:** AI Agent nao preserva binario do PDF. Solucao: passar `binary: $input.first().binary` nos Code nodes e buscar dados de `$('Validacao de Dados').first()`
+  - **Gate Seguranca com AND impossivel:** Condicoes true AND false nunca atendiam. Solucao: usar apenas `is true`
+  - **Ja Falhou? com OR redundante:** OR com true e false sempre ia para True. Solucao: usar apenas `is true`
+  - **AI Agent sem chatInput:** Precisou configurar "Source for Prompt" como "Define below" no n8n
+  - **Decide Seguranca sem binario:** Adicionado `binary: $('Validacao de Dados').first().binary` no return
+- System message do AI Agent otimizado para deteccao de injection
+- Atualizacao de `README.md` (secao 15: Guardrails n8n)
+- Atualizacao de `docs/lowcode/reproduction_guide.md`:
+  - Fluxo atualizado sem regex
+  - Troubleshooting com erros de binario
+  - Teste de prompt injection incluido
+- Arquivo: `lowcode/n8n_workflow.json` reescrito com 8 nodes

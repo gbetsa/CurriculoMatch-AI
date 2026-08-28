@@ -14,7 +14,7 @@ st.set_page_config(
 
 # URLs
 API_URL = os.getenv("API_URL", "http://localhost:8001")
-N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook-test/analyze")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/analyze")
 
 
 def check_api_health() -> bool:
