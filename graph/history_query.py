@@ -90,21 +90,18 @@ def query_similar_analyses(
             )
 
             priority = 0
-            if candidate_name and cand:
-                if (
-                    candidate_name.lower() in cand.lower()
-                    or cand.lower() in candidate_name.lower()
-                ):
-                    priority += 100
-            if job_title and job:
-                if (
-                    job_title.lower() in job.lower()
-                    or job.lower() in job_title.lower()
-                ):
-                    priority += 50
-            if score and score_val:
-                if abs(score - score_val) <= 10:
-                    priority += 25
+            if candidate_name and cand and (
+                candidate_name.lower() in cand.lower()
+                or cand.lower() in candidate_name.lower()
+            ):
+                priority += 100
+            if job_title and job and (
+                job_title.lower() in job.lower()
+                or job.lower() in job_title.lower()
+            ):
+                priority += 50
+            if score and score_val and abs(score - score_val) <= 10:
+                priority += 25
 
             if priority > 0:
                 records.append((priority, record))

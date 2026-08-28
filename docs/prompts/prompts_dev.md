@@ -1209,3 +1209,42 @@ Refatorar o workflow n8n para funcionar como guardrails de seguranca, removendo 
   - Troubleshooting com erros de binario
   - Teste de prompt injection incluido
 - Arquivo: `lowcode/n8n_workflow.json` reescrito com 8 nodes
+
+---
+
+### Spec 17 - Historico para o Agente
+**Data:** 27 de Agosto de 2026
+
+**Objetivo:**
+Dar ao agente IA acesso a analises anteriores similares para comparar resultados, manter consistencia e referenciar avaliacoes passadas.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Eu quero que a analise retorne de qualquer maneira a comparacao, nao esta retornando"
+> "mesmo curriculo, vaga e descricao, e mesmo assim nao tem resquicio de memoria"
+
+**Padrao de Prompting:** Bug fix + Feature request
+> Usuario identificou que o historico nao estava sendo exibido nos relatorios e solicitou correcao.
+
+**Resultado e Acao (Saida da IA):**
+
+**Bugs encontrados e corrigidos:**
+
+1. **`load_history` executava antes de `extract_information`**: O nó `load_history` rodava antes do `extract_information`, entao `candidate_name` e `job_title` estavam vazios. **Correcao:** Remover nó `load_history` do workflow e buscar historico diretamente no `analyze_match` (que ja tem `extracted_information`).
+
+2. **`DATABASE_URL` nao disponivel**: `os.getenv("DATABASE_URL")` retornava `None` porque `load_dotenv()` nao era chamado no modulo. **Correcao:** Adicionar `load_dotenv()` em `graph/history_query.py`.
+
+3. **`extracted_information` nao esta em `channel_values`**: O LangGraph checkpointer armazena `extracted_information` em `checkpoint_blobs` (formato msgpack), nao em `channel_values`. **Correcao:** Extrair candidato e cargo do `report` (que esta em `channel_values`) usando regex: `r"Compatibilidade:\s*(.+?)\s+vs\s+(.+?)(?:\n|$)"`.
+
+4. **Prompt sem variavel `history_context`**: O `ANALYZE_PROMPT` nao tinha a variavel `{history_context}`. **Correcao:** Adicionar `{history_context}` ao system prompt e `{history_instruction}` ao user prompt.
+
+5. **LLM nao incluia secao de historico**: Mesmo com historico no prompt, o LLM nao gerava a secao. **Correcao:** Adicionar instrucao explicita no prompt: "Secao 5. Historico de Analises Similares" obrigatoria quando ha historico.
+
+**Arquivos modificados:**
+- `graph/history_query.py` (novo): query compartilhada de analises similares
+- `graph/nodes.py`: `analyze_match` busca historico e passa para LLM
+- `graph/workflow.py`: removido nó `load_history`
+- `prompts/analyze_prompt.py`: secao `## 5. Historico de Analises Similares`
+- `tests/test_history_query.py` (novo): 6 testes unitarios
+
+**Commits:**
+- `858a616` feat(history): agente acessa analises anteriores similares via PostgreSQL
