@@ -104,8 +104,13 @@ def tab_new_analysis():
                         # n8n rejeitou (seguranca)
                         result = response.json()
                         n8n_ok = True
-                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-                    st.error("Nao foi possivel conectar ao n8n. Verifique se o workflow esta ativo.")
+                except (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                ):
+                    st.error(
+                        "Nao foi possivel conectar ao n8n. Verifique se o workflow esta ativo."
+                    )
                     return
 
                 # n8n retornou erro de seguranca (400)

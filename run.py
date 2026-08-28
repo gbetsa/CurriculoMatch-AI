@@ -68,7 +68,16 @@ def start_api() -> subprocess.Popen:
             subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
         )
     return subprocess.Popen(
-        [python, "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8001"],
+        [
+            python,
+            "-m",
+            "uvicorn",
+            "api.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8001",
+        ],
         cwd=str(ROOT),
         **kwargs,
     )
@@ -112,12 +121,17 @@ def main() -> None:
         description="Inicia API e Streamlit simultaneamente.",
     )
     parser.add_argument("--api-only", action="store_true", help="Iniciar somente a API")
-    parser.add_argument("--web-only", action="store_true", help="Iniciar somente o Streamlit")
-    parser.add_argument("--install", action="store_true", help="Apenas instalar dependencias")
+    parser.add_argument(
+        "--web-only", action="store_true", help="Iniciar somente o Streamlit"
+    )
+    parser.add_argument(
+        "--install", action="store_true", help="Apenas instalar dependencias"
+    )
     args = parser.parse_args()
 
     # Carregar .env
     from dotenv import load_dotenv
+
     load_dotenv(ROOT / ".env")
 
     # Garantir venv + deps
@@ -153,7 +167,9 @@ def main() -> None:
         while processes:
             for proc, name in processes[:]:
                 if proc.poll() is not None:
-                    print(f"[run] {name} encerrou inesperadamente (code={proc.returncode})")
+                    print(
+                        f"[run] {name} encerrou inesperadamente (code={proc.returncode})"
+                    )
                     processes.remove((proc, name))
 
             if not processes:
@@ -170,6 +186,7 @@ def main() -> None:
 def _sleep(seconds: int) -> None:
     """Fallback para signal.pause no Windows."""
     import time
+
     time.sleep(seconds)
 
 

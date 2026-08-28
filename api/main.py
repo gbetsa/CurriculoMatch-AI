@@ -313,9 +313,7 @@ async def list_history(
         end = start + limit
         paginated = items[start:end]
 
-        return HistoryResponse(
-            items=paginated, total=total, page=page, pages=pages
-        )
+        return HistoryResponse(items=paginated, total=total, page=page, pages=pages)
 
     except Exception:
         return HistoryResponse(items=[], total=0, page=page, pages=0)
