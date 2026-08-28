@@ -36,14 +36,12 @@ def query_similar_analyses(
         conn = psycopg.connect(database_url)
         cur = conn.cursor()
 
-        cur.execute(
-            """
+        cur.execute("""
             SELECT DISTINCT thread_id
             FROM checkpoints
             WHERE thread_id NOT LIKE 'test-%'
             ORDER BY thread_id
-        """
-        )
+        """)
         thread_ids = [row[0] for row in cur.fetchall()]
 
         records: list[tuple[int, AnalysisRecord]] = []
@@ -90,14 +88,21 @@ def query_similar_analyses(
             )
 
             priority = 0
-            if candidate_name and cand and (
-                candidate_name.lower() in cand.lower()
-                or cand.lower() in candidate_name.lower()
+            if (
+                candidate_name
+                and cand
+                and (
+                    candidate_name.lower() in cand.lower()
+                    or cand.lower() in candidate_name.lower()
+                )
             ):
                 priority += 100
-            if job_title and job and (
-                job_title.lower() in job.lower()
-                or job.lower() in job_title.lower()
+            if (
+                job_title
+                and job
+                and (
+                    job_title.lower() in job.lower() or job.lower() in job_title.lower()
+                )
             ):
                 priority += 50
             if score and score_val and abs(score - score_val) <= 10:

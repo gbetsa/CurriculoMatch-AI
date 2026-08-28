@@ -91,7 +91,9 @@ class TestQuerySimilarAnalyses:
                 "channel_values": {
                     "report": "# Analise de Compatibilidade: Ana vs Dev Python",
                     "compatibility_score": 75,
-                    "extracted_information": {"vaga": {"cargo": "Desenvolvedor Python"}},
+                    "extracted_information": {
+                        "vaga": {"cargo": "Desenvolvedor Python"}
+                    },
                 },
                 "ts": "2026-08-19T10:00:00",
             },
