@@ -368,3 +368,23 @@ Todas as interações realizadas com a IA, as técnicas de prompting utilizadas 
 * [docs/prompts/prompts_dev.md](docs/prompts/prompts_dev.md)
 
 Este diário garante total rastreabilidade das decisões técnicas e da construção guiada por IA do CurriculoMatch.
+
+---
+
+## 17. Prompts, Modelos e Refinamento
+
+### System Prompts
+Todos os system prompts utilizados no fluxo do agente estão consolidados em [docs/prompts/system_prompts.md](docs/prompts/system_prompts.md):
+- **Prompt de Extração** — converte texto bruto (currículo + vaga) em JSON estruturado via Structured Output
+- **Prompt de Análise** — gera relatório de compatibilidade em Markdown com REGRA DE OURO contra falsos-negativos
+- **Prompt de Sanitização** — detecção via regex de padrões de prompt injection (PT + EN)
+
+### Configuração do Modelo
+O modelo LLM é configurado via variáveis de ambiente (nunca hardcoded):
+- `LLM_PROVIDER` — provedor (groq, openai, ollama)
+- `GROQ_MODEL` — modelo específico (default: `qwen/qwen3.8-27b`)
+- `LLM_TEMPERATURE` — criatividade (default: 0, para respostas determinísticas)
+
+### Ciclo de Refinamento
+O projeto documenta ciclos de refinamento de prompts em [docs/prompts/refinement_log.md](docs/prompts/refinement_log.md):
+- **Ciclo 1:** Correção de falsos-negativos por variação de nomenclatura (ex: "Express" vs "Express.js") via REGRA DE OURO e separação de schema Pydantic
