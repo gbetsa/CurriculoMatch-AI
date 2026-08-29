@@ -1277,3 +1277,40 @@ Apos implementar o fluxo via n8n, o endpoint `/analyze/batch` retornava `results
 
 **Commits:**
 - `fix: remover analyze_injection do workflow, corrigir concurrent update, trocar modelo Groq`
+
+---
+
+### Correcao - Criacao de Banco de Dados na Documentacao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar instrucao de criacao do banco de dados `curriculomatch` nas Opcoes 2 e 3 do README, ja que o `PostgresSaver` so cria tabelas e nao o banco em si.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Isso esta na documentacao?"
+
+**Padrao de Prompting:** Validation / Documentation gap
+> Usuario identificou que a instrucao de criacao do banco nao estava documentada nas opcoes de instalacao.
+
+**Resultado e Acao (Saida da IA):**
+- Adicionado `psql -U postgres -c "CREATE DATABASE curriculomatch;"` nas Opcoes 2 e 3 do README
+- Nota: Opcao 1 (Docker Compose) ja cria o banco automaticamente via `POSTGRES_DB`
+
+---
+
+### Documentacao - Pre-requisitos e Numeracao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar secao de pre-requisitos ao README e corrigir numeracao das secoes. Atualizar CONTRIBUTING.md removendo "opcional" de PostgreSQL e Docker.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Os requisitos dizem que deve ter python, postgres e docker? Alem do n8n que instalara no docker"
+
+**Padrao de Prompting:** Documentation alignment
+> Usuario questionou se os pre-requisitos estavam claros na documentacao.
+
+**Resultado e Acao (Saida da IA):**
+- Criada secao "6. Pre-requisitos" no README com Python 3.12+, PostgreSQL 15+, Docker + Docker Compose e Git
+- Renumeradas secoes 6-10 para 7-11 no README
+- Atualizado CONTRIBUTING.md: removido "(opcional, para checkpointer)" de PostgreSQL e "(opcional, para n8n)" de Docker
