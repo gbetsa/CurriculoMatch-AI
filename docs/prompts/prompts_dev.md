@@ -1343,3 +1343,23 @@ Adicionar secao de pre-requisitos ao README e corrigir numeracao das secoes. Atu
 - Criada secao "6. Pre-requisitos" no README com Python 3.12+, PostgreSQL 15+, Docker + Docker Compose e Git
 - Renumeradas secoes 6-10 para 7-11 no README
 - Atualizado CONTRIBUTING.md: removido "(opcional, para checkpointer)" de PostgreSQL e "(opcional, para n8n)" de Docker
+
+---
+
+### Melhoria - Instrucoes de Instalacao n8n no README
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Expandir a Opcao 3 do README com passos claros de configuracao do n8n apos a inicializacao, incluindo importacao do workflow, configuracao de credenciais e ativacao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Nao, quero que a documentacao fique facil de entender, deve ter referencias no passo a passo para essa instalacao"
+
+**Padrao de Prompting:** Documentation improvement
+> Usuario identificou que a instalacao manual nao explicava os passos de configuracao do n8n, tornando difcil para novo usuario.
+
+**Resultado e Acao (Saida da IA):**
+- Expandida Opcao 3 do README com pos-instalacao do n8n (5 passos)
+- Corrigido comando `psql` para `docker exec -i postgres psql` (compatibilidade com Docker)
+- Removido "opcional" do n8n (Streamlit depende dele)
+- Melhorada secao "Configuracao do n8n" com tabela de passos

@@ -234,7 +234,7 @@ python run.py
 
 ```bash
 # Criar banco de dados (necessario apenas na primeira vez)
-psql -U postgres -c "CREATE DATABASE curriculomatch;"
+docker exec -i postgres psql -U postgres -c "CREATE DATABASE curriculomatch;"
 
 # Terminal 1 - API
 pip install -r requirements.txt
@@ -243,10 +243,20 @@ uvicorn api.main:app --reload --port 8001
 # Terminal 2 - Streamlit
 streamlit run streamlit_app.py
 
-# Terminal 3 - n8n (opcional)
+# Terminal 3 - n8n (necessario para o Streamlit funcionar)
 cd lowcode
 docker-compose -f docker-compose.n8n.yml up -d
 ```
+
+**Apos iniciar o n8n, configurar o workflow:**
+
+1. Acessar `http://localhost:5678`
+2. Login: `admin` / `curriculomatch`
+3. Importar o workflow: `lowcode/n8n_workflow.json`
+4. Configurar a credencial Groq (Header Auth com sua `GROQ_API_KEY`)
+5. Ativar o workflow
+
+Documentacao completa: `docs/lowcode/reproduction_guide.md`
 
 ### Variaveis de Ambiente (.env)
 
@@ -346,13 +356,16 @@ Streamlit -> n8n Webhook -> Validacao -> AI Agent -> Gate -> API -> Streamlit
 | Chama API | Envia multipart para API |
 | Responde Webhook | Retorna JSON ao Streamlit |
 
-### Instrucoes de Reproducao
+### Configuracao do n8n
 
-1. `docker-compose -f lowcode/docker-compose.n8n.yml up -d`
-2. Acessar `http://localhost:5678`
-3. Login: admin / curriculomatch
-4. Importar `lowcode/n8n_workflow.json`
-5. Configurar credenciais Groq
+| Passo | Acao |
+|-------|------|
+| 1 | Iniciar: `cd lowcode && docker-compose -f docker-compose.n8n.yml up -d` |
+| 2 | Acessar `http://localhost:5678` |
+| 3 | Login: `admin` / `curriculomatch` |
+| 4 | Importar `lowcode/n8n_workflow.json` |
+| 5 | Configurar credencial Groq (Header Auth) |
+| 6 | Ativar o workflow |
 
 Documentacao completa: `docs/lowcode/reproduction_guide.md`
 
