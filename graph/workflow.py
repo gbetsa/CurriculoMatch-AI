@@ -35,7 +35,7 @@ def route_after_read(state: AgentState) -> str:
 
     Garante que o fluxo principal so avanca se nenhum erro de leitura ocorreu.
     """
-    if state.get("is_valid", True) and not state.get("error_message"):
+    if not state.get("error_message"):
         return "continue"
     return END
 

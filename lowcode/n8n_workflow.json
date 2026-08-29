@@ -12,7 +12,10 @@
       "name": "Recebe Dados",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [-1216, -112],
+      "position": [
+        -1216,
+        -112
+      ],
       "webhookId": "curriculomatch-analyze"
     },
     {
@@ -23,14 +26,31 @@
       "name": "Validacao de Dados",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-992, -112]
+      "position": [
+        -992,
+        -112
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
-            { "id": "897b8a03-ae52-4283-97ed-f86739f904a1", "leftValue": "={{ $json._security_failed }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+            {
+              "id": "897b8a03-ae52-4283-97ed-f86739f904a1",
+              "leftValue": "={{ $json._security_failed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
           ],
           "combinator": "or"
         },
@@ -40,7 +60,10 @@
       "name": "Ja Falhou?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-768, -112]
+      "position": [
+        -768,
+        -112
+      ]
     },
     {
       "parameters": {
@@ -54,19 +77,32 @@
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [-608, -16]
+      "position": [
+        -608,
+        -16
+      ]
     },
     {
       "parameters": {
         "model": "qwen/qwen3.6-27b",
-        "options": { "temperature": 0.1 }
+        "options": {
+          "temperature": 0.1
+        }
       },
       "id": "14f3425c-9b30-49b8-a61b-443a9bd2d209",
       "name": "Groq Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
-      "position": [-608, 192],
-      "credentials": { "groqApi": { "id": "i2INAptD84qjKgDn", "name": "Groq account" } }
+      "position": [
+        -608,
+        192
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "i2INAptD84qjKgDn",
+          "name": "Groq account"
+        }
+      }
     },
     {
       "parameters": {
@@ -76,14 +112,31 @@
       "name": "Decide Seguranca",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-320, -112]
+      "position": [
+        -320,
+        -112
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
-            { "id": "2369df8d-22b4-48de-aafb-a8849d1c08d9", "leftValue": "={{ $json._security_failed }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+            {
+              "id": "2369df8d-22b4-48de-aafb-a8849d1c08d9",
+              "leftValue": "={{ $json._security_failed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
           ],
           "combinator": "or"
         },
@@ -93,41 +146,44 @@
       "name": "Gate Seguranca",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-112, -112]
+      "position": [
+        -112,
+        -112
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ { error: $json.error, details: $json.details, stage: $json._stage } }}",
-        "options": { "responseCode": 400 }
+        "options": {
+          "responseCode": 400
+        }
       },
       "id": "a75c59a1-5a19-49a2-875b-62432e395326",
       "name": "Erro Seguranca",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [112, -208]
-    },
-    {
-      "parameters": {
-        "jsCode": "const data = $('Validacao de Dados').first().json;\nconst binaryKey = data._binary_key;\n\nconst jobTitle = data.job_title || '';\nconst jobDescription = data.job_description || '';\n\nconst bin = $('Validacao de Dados').first().binary;\nconst pdfBuffer = await this.helpers.getBinaryDataBuffer(0, binaryKey);\n\nlet pdfName = (bin && bin[binaryKey]) ? bin[binaryKey].fileName : 'curriculo.pdf';\npdfName = String(pdfName).replace(/[\\r\\n\"]/g, '').slice(0, 255);\n\nfunction randomHex(bytes) {\n  let hex = '';\n  for (let i = 0; i < bytes; i++) {\n    hex += Math.floor(Math.random() * 256).toString(16).padStart(2, '0');\n  }\n  return hex;\n}\nconst boundary = '----FormBoundary' + randomHex(16) + Date.now().toString(16);\n\nif (jobTitle.includes(boundary) || jobDescription.includes(boundary)) {\n  return [{ json: { _security_failed: true, _stage: 'multipart', error: 'Conteudo invalido', details: ['Colisao de boundary detectada'] } }];\n}\n\nconst parts = [];\nparts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"curriculum\"; filename=\"${pdfName}\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n`);\nparts.push(pdfBuffer);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_title\"\\r\\n\\r\\n${jobTitle}`);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_description\"\\r\\n\\r\\n${jobDescription}`);\nparts.push(`\\r\\n--${boundary}--\\r\\n`);\n\nconst bodyParts = parts.map(p => typeof p === 'string' ? Buffer.from(p, 'utf-8') : p);\nconst body = Buffer.concat(bodyParts);\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:8001/analyze',\n    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },\n    body: body,\n    returnFullResponse: true\n  });\n\n  return [{ json: response.body }];\n} catch (e) {\n  return [{ json: { error: 'Falha ao comunicar com a API', details: [e.message] } }];\n}"
-      },
-      "id": "d6e6efb6-1ffb-4153-bc67-74b9c7e703f9",
-      "name": "Chama API",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [112, -16]
+      "position": [
+        112,
+        -208
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ $json }}",
-        "options": {}
+        "options": {
+          "responseCode": "={{ $json._security_failed ? 400 : 200 }}"
+        }
       },
       "id": "31348b09-4970-4e28-ae48-df71d89bcae3",
       "name": "Responde Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [336, -112]
+      "position": [
+        336,
+        -112
+      ]
     },
     {
       "parameters": {
@@ -140,7 +196,10 @@
       "name": "Recebe Dados Batch",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [-1216, 400],
+      "position": [
+        -1216,
+        400
+      ],
       "webhookId": "curriculomatch-analyze-batch"
     },
     {
@@ -151,14 +210,31 @@
       "name": "Validacao Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-992, 400]
+      "position": [
+        -992,
+        400
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
-            { "id": "c3d4e5f6-a7b8-9012-cdef-123456789012", "leftValue": "={{ $json._security_failed }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+            {
+              "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+              "leftValue": "={{ $json._security_failed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
           ],
           "combinator": "or"
         },
@@ -168,7 +244,10 @@
       "name": "Ja Falhou? Batch",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-768, 400]
+      "position": [
+        -768,
+        400
+      ]
     },
     {
       "parameters": {
@@ -182,19 +261,32 @@
       "name": "AI Agent Batch",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [-608, 512]
+      "position": [
+        -608,
+        512
+      ]
     },
     {
       "parameters": {
         "model": "qwen/qwen3.6-27b",
-        "options": { "temperature": 0.1 }
+        "options": {
+          "temperature": 0.1
+        }
       },
       "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
       "name": "Groq Chat Model Batch",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
-      "position": [-608, 688],
-      "credentials": { "groqApi": { "id": "i2INAptD84qjKgDn", "name": "Groq account" } }
+      "position": [
+        -608,
+        688
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "i2INAptD84qjKgDn",
+          "name": "Groq account"
+        }
+      }
     },
     {
       "parameters": {
@@ -204,14 +296,31 @@
       "name": "Decide Seguranca Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-320, 400]
+      "position": [
+        -320,
+        400
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
-            { "id": "b8c9d0e1-f2a3-4567-bcde-678901234567", "leftValue": "={{ $json._security_failed }}", "rightValue": "", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+            {
+              "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
+              "leftValue": "={{ $json._security_failed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
           ],
           "combinator": "or"
         },
@@ -221,29 +330,40 @@
       "name": "Gate Seguranca Batch",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-112, 400]
+      "position": [
+        -112,
+        400
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ { error: $json.error, details: $json.details, stage: $json._stage } }}",
-        "options": { "responseCode": 400 }
+        "options": {
+          "responseCode": 400
+        }
       },
       "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
       "name": "Erro Seguranca Batch",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [112, 304]
+      "position": [
+        112,
+        304
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const data = $('Validacao Batch').first().json;\nconst binaryKeys = data._binary_keys || [];\n\nconst jobTitle = data.job_title || '';\nconst jobDescription = data.job_description || '';\n\nconst bin = $('Validacao Batch').first().binary;\n\nfunction randomHex(bytes) {\n  let hex = '';\n  for (let i = 0; i < bytes; i++) {\n    hex += Math.floor(Math.random() * 256).toString(16).padStart(2, '0');\n  }\n  return hex;\n}\nconst boundary = '----FormBoundary' + randomHex(16) + Date.now().toString(16);\n\nif (jobTitle.includes(boundary) || jobDescription.includes(boundary)) {\n  return [{ json: { _security_failed: true, _stage: 'multipart', error: 'Conteudo invalido', details: ['Colisao de boundary detectada'] } }];\n}\n\nconst parts = [];\n\nfor (const key of binaryKeys) {\n  try {\n    const pdfBuffer = await this.helpers.getBinaryDataBuffer(0, key);\n    let pdfName = (bin && bin[key]) ? bin[key].fileName : 'curriculo.pdf';\n    pdfName = String(pdfName).replace(/[\\r\\n\"]/g, '').slice(0, 255);\n\n    parts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"curriculos\"; filename=\"${pdfName}\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n`);\n    parts.push(pdfBuffer);\n    parts.push(`\\r\\n`);\n  } catch (e) {\n    return [{ json: { error: 'Erro ao ler PDF', details: [`Arquivo ${key}: ${e.message}`] } }];\n  }\n}\n\nparts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_title\"\\r\\n\\r\\n${jobTitle}`);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_description\"\\r\\n\\r\\n${jobDescription}`);\nparts.push(`\\r\\n--${boundary}--\\r\\n`);\n\nconst bodyParts = parts.map(p => typeof p === 'string' ? Buffer.from(p, 'utf-8') : p);\nconst body = Buffer.concat(bodyParts);\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:8001/analyze/batch',\n    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },\n    body: body,\n    returnFullResponse: true\n  });\n\n  return [{ json: response.body }];\n} catch (e) {\n  return [{ json: { error: 'Falha ao comunicar com a API', details: [e.message] } }];\n}"
+        "jsCode": "const data = $('Validacao Batch').first().json;\nconst binaryKeys = data._binary_keys || [];\n\nconst jobTitle = data.job_title || '';\nconst jobDescription = data.job_description || '';\n\nconst bin = $('Validacao Batch').first().binary;\n\nfunction randomHex(bytes) {\n  let hex = '';\n  for (let i = 0; i < bytes; i++) {\n    hex += Math.floor(Math.random() * 256).toString(16).padStart(2, '0');\n  }\n  return hex;\n}\nconst boundary = '----FormBoundary' + randomHex(16) + Date.now().toString(16);\n\nif (jobTitle.includes(boundary) || jobDescription.includes(boundary)) {\n  return [{ json: { _security_failed: true, _stage: 'multipart', error: 'Conteudo invalido', details: ['Colisao de boundary detectada'] } }];\n}\n\nconst parts = [];\n\nfor (const key of binaryKeys) {\n  try {\n    const pdfBuffer = await this.helpers.getBinaryDataBuffer(0, key);\n    let pdfName = (bin && bin[key]) ? bin[key].fileName : 'curriculo.pdf';\n    pdfName = String(pdfName).replace(/[\\r\\n\\\"]/g, '').slice(0, 255);\n\n    parts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"curriculos\"; filename=\"${pdfName}\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n`);\n    parts.push(pdfBuffer);\n    parts.push(`\\r\\n`);\n  } catch (e) {\n    return [{ json: { error: 'Erro ao ler PDF', details: [`Arquivo ${key}: ${e.message}`] } }];\n  }\n}\n\nparts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_title\"\\r\\n\\r\\n${jobTitle}`);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_description\"\\r\\n\\r\\n${jobDescription}`);\nparts.push(`\\r\\n--${boundary}--\\r\\n`);\n\nconst bodyParts = parts.map(p => typeof p === 'string' ? Buffer.from(p, 'utf-8') : p);\nconst body = Buffer.concat(bodyParts);\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:8001/analyze/batch',\n    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },\n    body: body\n  });\n\n  return [{ json: response }];\n} catch (e) {\n  return [{ json: { error: 'Falha ao comunicar com a API', details: [e.message] } }];\n}"
       },
       "id": "e1f2a3b4-c5d6-7890-efab-901234567890",
       "name": "Chama API Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [112, 456]
+      "position": [
+        112,
+        456
+      ]
     },
     {
       "parameters": {
@@ -255,74 +375,236 @@
       "name": "Responde Webhook Batch",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [336, 400]
+      "position": [
+        336,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Validacao de Dados').first().json;\nconst binaryKey = data._binary_key;\n\nconst jobTitle = data.job_title || '';\nconst jobDescription = data.job_description || '';\n\nconst bin = $('Validacao de Dados').first().binary;\nconst pdfBuffer = await this.helpers.getBinaryDataBuffer(0, binaryKey);\n\nlet pdfName = (bin && bin[binaryKey]) ? bin[binaryKey].fileName : 'curriculo.pdf';\npdfName = String(pdfName).replace(/[\\r\\n\\\"]/g, '').slice(0, 255);\n\nfunction randomHex(bytes) {\n  let hex = '';\n  for (let i = 0; i < bytes; i++) {\n    hex += Math.floor(Math.random() * 256).toString(16).padStart(2, '0');\n  }\n  return hex;\n}\nconst boundary = '----FormBoundary' + randomHex(16) + Date.now().toString(16);\n\nif (jobTitle.includes(boundary) || jobDescription.includes(boundary)) {\n  return [{ json: { _security_failed: true, _stage: 'multipart', error: 'Conteudo invalido', details: ['Colisao de boundary detectada'] } }];\n}\n\nconst parts = [];\nparts.push(`--${boundary}\\r\\nContent-Disposition: form-data; name=\"curriculum\"; filename=\"${pdfName}\"\\r\\nContent-Type: application/pdf\\r\\n\\r\\n`);\nparts.push(pdfBuffer);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_title\"\\r\\n\\r\\n${jobTitle}`);\nparts.push(`\\r\\n--${boundary}\\r\\nContent-Disposition: form-data; name=\"job_description\"\\r\\n\\r\\n${jobDescription}`);\nparts.push(`\\r\\n--${boundary}--\\r\\n`);\n\nconst bodyParts = parts.map(p => typeof p === 'string' ? Buffer.from(p, 'utf-8') : p);\nconst body = Buffer.concat(bodyParts);\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:8001/analyze',\n    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },\n    body: body\n  });\n\n  if (response._blocked) {\n    return [{ json: { _security_failed: true, _stage: response._stage || 'api_injection', error: response.detail, details: [response.detail] } }];\n  }\n\n  return [{ json: response }];\n} catch (e) {\n  return [{ json: { error: 'Falha ao comunicar com a API', details: [e.message] } }];\n}"
+      },
+      "id": "d6e6efb6-1ffb-4153-bc67-74b9c7e703f9",
+      "name": "Chama API",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -16
+      ]
     }
   ],
   "pinData": {},
   "connections": {
     "Recebe Dados": {
-      "main": [[{ "node": "Validacao de Dados", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Validacao de Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validacao de Dados": {
-      "main": [[{ "node": "Ja Falhou?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Ja Falhou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Ja Falhou?": {
       "main": [
-        [{ "node": "Decide Seguranca", "type": "main", "index": 0 }],
-        [{ "node": "AI Agent", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Decide Seguranca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "AI Agent": {
-      "main": [[{ "node": "Decide Seguranca", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Decide Seguranca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Decide Seguranca": {
-      "main": [[{ "node": "Gate Seguranca", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Gate Seguranca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Gate Seguranca": {
       "main": [
-        [{ "node": "Erro Seguranca", "type": "main", "index": 0 }],
-        [{ "node": "Chama API", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Erro Seguranca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chama API",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Chama API": {
-      "main": [[{ "node": "Responde Webhook", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Responde Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Groq Chat Model": {
-      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Recebe Dados Batch": {
-      "main": [[{ "node": "Validacao Batch", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Validacao Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validacao Batch": {
-      "main": [[{ "node": "Ja Falhou? Batch", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Ja Falhou? Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Ja Falhou? Batch": {
       "main": [
-        [{ "node": "Decide Seguranca Batch", "type": "main", "index": 0 }],
-        [{ "node": "AI Agent Batch", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Decide Seguranca Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "AI Agent Batch": {
-      "main": [[{ "node": "Decide Seguranca Batch", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Decide Seguranca Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Decide Seguranca Batch": {
-      "main": [[{ "node": "Gate Seguranca Batch", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Gate Seguranca Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Gate Seguranca Batch": {
       "main": [
-        [{ "node": "Erro Seguranca Batch", "type": "main", "index": 0 }],
-        [{ "node": "Chama API Batch", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Erro Seguranca Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chama API Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Chama API Batch": {
-      "main": [[{ "node": "Responde Webhook Batch", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Responde Webhook Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Groq Chat Model Batch": {
-      "ai_languageModel": [[{ "node": "AI Agent Batch", "type": "ai_languageModel", "index": 0 }]]
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Batch",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "versionId": "batch-v1",
   "meta": {
     "templateCredsSetupCompleted": true,

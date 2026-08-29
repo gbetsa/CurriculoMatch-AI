@@ -12,27 +12,17 @@ st.set_page_config(
     layout="wide",
 )
 
-# URLs
-API_URL = os.getenv("API_URL", "http://localhost:8001")
+# URLs (apenas n8n - API nao e chamada diretamente)
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/analyze")
-
-
-def check_api_health() -> bool:
-    """Verifica se a API esta disponivel."""
-    try:
-        response = requests.get(f"{API_URL}/health", timeout=5)
-        return response.status_code == 200
-    except requests.exceptions.RequestException:
-        return False
+N8N_BATCH_WEBHOOK_URL = os.getenv(
+    "N8N_BATCH_WEBHOOK_URL", "http://localhost:5678/webhook/analyze-batch"
+)
 
 
 def render_report(report: str, score: int):
     """Renderiza o relatorio com barra de progresso."""
-    # Barra de progresso
     st.progress(score / 100)
     st.metric("Score de Aderencia", f"{score}/100")
-
-    # Relatorio em Markdown
     st.markdown("---")
     st.markdown(report)
 
@@ -85,11 +75,6 @@ def tab_new_analysis():
                     "job_description": job_description,
                 }
 
-                n8n_ok = False
-                result = None
-                response = None
-
-                # Tenta via n8n
                 try:
                     response = requests.post(
                         N8N_WEBHOOK_URL,
@@ -97,13 +82,6 @@ def tab_new_analysis():
                         data=data,
                         timeout=120,
                     )
-                    if response.status_code == 200:
-                        result = response.json()
-                        n8n_ok = True
-                    elif response.status_code == 400:
-                        # n8n rejeitou (seguranca)
-                        result = response.json()
-                        n8n_ok = True
                 except (
                     requests.exceptions.ConnectionError,
                     requests.exceptions.Timeout,
@@ -113,37 +91,12 @@ def tab_new_analysis():
                     )
                     return
 
-                # n8n retornou erro de seguranca (400)
-                if result and response and response.status_code == 400:
-                    error_msg = result.get("error", "Erro de seguranca")
-                    details = result.get("details", [])
-                    stage = result.get("stage", "")
+                result = response.json()
 
-                    # Mapear etapa para nome amigavel
-                    stage_names = {
-                        "validacao": "Validacao de Dados",
-                        "regex": "Verificacao de Seguranca",
-                        "ia_security": "Analise de IA",
-                    }
-                    stage_name = stage_names.get(stage, stage)
-
-                    st.error("Analise bloqueada pelo sistema de seguranca")
-                    st.info(f"**Motivo:** {error_msg}")
-                    st.caption(f"Etapa: {stage_name}")
-                    if details:
-                        st.markdown("**Detalhes:**")
-                        for d in details:
-                            st.write(f"- {d}")
-                    return
-
-                if result and response and response.status_code == 200:
+                if response.status_code == 200:
                     st.success("Analise concluida com sucesso!")
-                    if n8n_ok:
-                        st.caption("Via n8n workflow")
-                    else:
-                        st.caption("Via API direta")
+                    st.caption("Via n8n workflow")
 
-                    # Exibir resultado
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Candidato", result.get("candidate_name", "N/A"))
@@ -154,65 +107,33 @@ def tab_new_analysis():
 
                     render_report(result.get("report", ""), result.get("score", 0))
 
-                    # Botao de aprovacao
-                    st.markdown("---")
-                    st.subheader("Aprovacao")
-                    analysis_id = result.get("analysis_id", "")
+                elif response.status_code == 400:
+                    error_msg = result.get("error", "Erro de seguranca")
+                    details = result.get("details", [])
+                    stage = result.get("stage", "")
 
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button(
-                            "Aprovar Analise",
-                            type="primary",
-                            key="approve_btn",
-                            use_container_width=True,
-                        ):
-                            try:
-                                approve_response = requests.post(
-                                    f"{API_URL}/approve/{analysis_id}",
-                                    json={"approved": True},
-                                    timeout=30,
-                                )
-                                if approve_response.status_code == 200:
-                                    st.success("Analise aprovada com sucesso!")
-                                else:
-                                    st.error(
-                                        f"Erro ao aprovar: {approve_response.status_code}"
-                                    )
-                            except requests.exceptions.ConnectionError:
-                                st.error("Nao foi possivel conectar a API.")
-                    with col2:
-                        if st.button(
-                            "Rejeitar Analise",
-                            type="secondary",
-                            key="reject_btn",
-                            use_container_width=True,
-                        ):
-                            try:
-                                approve_response = requests.post(
-                                    f"{API_URL}/approve/{analysis_id}",
-                                    json={"approved": False},
-                                    timeout=30,
-                                )
-                                if approve_response.status_code == 200:
-                                    st.warning("Analise rejeitada.")
-                                else:
-                                    st.info(
-                                        f"Analise rejeitada: {approve_response.status_code}"
-                                    )
-                            except requests.exceptions.ConnectionError:
-                                st.error("Nao foi possivel conectar a API.")
+                    stage_names = {
+                        "validacao": "Validacao de Dados",
+                        "regex": "Verificacao de Seguranca",
+                        "ia_security": "Analise de IA (vaga)",
+                        "api_injection": "Analise de IA (curriculo)",
+                    }
+                    stage_name = stage_names.get(stage, stage)
 
-                elif response.status_code == 422:
-                    st.error(
-                        f"Erro de validacao: {response.json().get('detail', 'Erro desconhecido')}"
-                    )
+                    st.error("Analise bloqueada pelo sistema de seguranca")
+                    st.info(f"**Motivo:** {error_msg}")
+                    st.caption(f"Etapa: {stage_name}")
+                    if details:
+                        st.markdown("**Detalhes:**")
+                        for d in details:
+                            st.write(f"- {d}")
+
                 else:
-                    st.error(f"Erro na API: {response.status_code} - {response.text}")
+                    st.error(f"Erro no n8n: {response.status_code} - {response.text}")
 
             except requests.exceptions.ConnectionError:
                 st.error(
-                    "Nao foi possivel conectar a API. Verifique se o backend esta rodando."
+                    "Nao foi possivel conectar ao n8n. Verifique se o backend esta rodando."
                 )
             except requests.exceptions.Timeout:
                 st.error("A requisicao expirou. Tente novamente.")
@@ -220,88 +141,8 @@ def tab_new_analysis():
                 st.error(f"Erro inesperado: {e!s}")
 
 
-def tab_history():
-    """Aba 2: Historico."""
-    st.header("Historico de Analises")
-
-    # Filtros
-    col1, col2, col3 = st.columns([2, 2, 1])
-    with col1:
-        candidate_filter = st.text_input(
-            "Filtrar por candidato", key="candidate_filter"
-        )
-    with col2:
-        job_filter = st.text_input("Filtrar por vaga", key="job_filter")
-    with col3:
-        page_size = st.selectbox("Itens por pagina", [5, 10, 20], key="page_size")
-
-    # Paginacao
-    if "history_page" not in st.session_state:
-        st.session_state.history_page = 1
-
-    page = st.session_state.history_page
-
-    try:
-        params = {
-            "page": page,
-            "limit": page_size,
-        }
-        if candidate_filter:
-            params["candidate_name"] = candidate_filter
-        if job_filter:
-            params["job_title"] = job_filter
-
-        response = requests.get(f"{API_URL}/history", params=params, timeout=30)
-
-        if response.status_code == 200:
-            data = response.json()
-            items = data.get("items", [])
-            total = data.get("total", 0)
-            pages = data.get("pages", 0)
-
-            if not items:
-                st.info("Nenhuma analise encontrada.")
-            else:
-                # Tabela de historico
-                st.dataframe(
-                    [
-                        {
-                            "Data": item.get("created_at", ""),
-                            "Candidato": item.get("candidate_name", ""),
-                            "Vaga": item.get("job_title", ""),
-                            "Score": item.get("score", 0),
-                            "Status": "Concluido",
-                        }
-                        for item in items
-                    ],
-                    use_container_width=True,
-                )
-
-                # Paginacao
-                col1, col2, col3 = st.columns([1, 2, 1])
-                with col1:
-                    if page > 1 and st.button("Anterior"):
-                        st.session_state.history_page -= 1
-                        st.rerun()
-                with col2:
-                    st.write(f"Pagina {page} de {pages} ({total} itens)")
-                with col3:
-                    if page < pages and st.button("Proximo"):
-                        st.session_state.history_page += 1
-                        st.rerun()
-        else:
-            st.error(f"Erro ao carregar historico: {response.status_code}")
-
-    except requests.exceptions.ConnectionError:
-        st.error(
-            "Nao foi possivel conectar a API. Verifique se o backend esta rodando."
-        )
-    except Exception as e:
-        st.error(f"Erro inesperado: {e!s}")
-
-
 def tab_compare():
-    """Aba 3: Comparar Candidatos."""
+    """Aba 2: Comparar Candidatos."""
     st.header("Comparar Candidatos")
 
     col1, col2 = st.columns([1, 1])
@@ -336,7 +177,9 @@ def tab_compare():
             st.error("Por favor, preencha o titulo e a descricao da vaga.")
             return
 
-        with st.spinner(f"Analisando {len(curriculum_files)} curriculos... Aguarde."):
+        with st.spinner(
+            f"Analisando {len(curriculum_files)} curriculos via n8n... Aguarde."
+        ):
             try:
                 files = [
                     ("curriculos", (f.name, f.getvalue(), "application/pdf"))
@@ -347,26 +190,39 @@ def tab_compare():
                     "job_description": job_description,
                 }
 
-                response = requests.post(
-                    f"{API_URL}/analyze/batch",
-                    files=files,
-                    data=data,
-                    timeout=300,
-                )
+                try:
+                    response = requests.post(
+                        N8N_BATCH_WEBHOOK_URL,
+                        files=files,
+                        data=data,
+                        timeout=300,
+                    )
+                except requests.exceptions.ConnectionError:
+                    st.error(
+                        "Nao foi possivel conectar ao n8n. Verifique se o workflow esta ativo."
+                    )
+                    return
 
                 if response.status_code == 200:
                     result = response.json()
-                    st.success("Comparacao concluida com sucesso!")
-
-                    # Ranking
-                    st.subheader("Ranking")
+                    results = result.get("results", [])
                     ranking = result.get("ranking", [])
+
+                    if not results:
+                        st.warning(
+                            "Nenhum curriculo passou na verificacao de seguranca. "
+                            "Todos foram bloqueados por prompt injection."
+                        )
+                        return
+
+                    st.success("Comparacao concluida com sucesso!")
+                    st.caption("Via n8n workflow")
+
+                    st.subheader("Ranking")
                     for i, name in enumerate(ranking, 1):
                         st.write(f"{i}o - {name}")
 
-                    # Resultados detalhados
                     st.subheader("Detalhes")
-                    results = result.get("results", [])
 
                     cols = st.columns(min(len(results), 3))
                     for i, r in enumerate(results):
@@ -376,16 +232,26 @@ def tab_compare():
                             st.metric("Score", f"{r.get('score', 0)}/100")
                             st.markdown(r.get("report", ""))
 
-                elif response.status_code == 422:
-                    st.error(
-                        f"Erro de validacao: {response.json().get('detail', 'Erro desconhecido')}"
-                    )
+                elif response.status_code == 400:
+                    error_data = response.json()
+                    stage = error_data.get("stage", "")
+                    stage_labels = {
+                        "validacao": "Validacao de Dados",
+                        "ia_security": "Analise de IA",
+                        "multipart": "Montagem de Requisicao",
+                    }
+                    stage_name = stage_labels.get(stage, stage)
+                    st.error(f"**{stage_name}**")
+                    st.error(error_data.get("error", "Erro desconhecido"))
+                    details = error_data.get("details", [])
+                    for d in details:
+                        st.warning(d)
                 else:
-                    st.error(f"Erro na API: {response.status_code} - {response.text}")
+                    st.error(f"Erro no n8n: {response.status_code} - {response.text}")
 
             except requests.exceptions.ConnectionError:
                 st.error(
-                    "Nao foi possivel conectar a API. Verifique se o backend esta rodando."
+                    "Nao foi possivel conectar ao n8n. Verifique se o backend esta rodando."
                 )
             except requests.exceptions.Timeout:
                 st.error("A requisicao expirou. Tente novamente.")
@@ -398,22 +264,12 @@ def main():
     st.title("CurriculoMatch AI")
     st.markdown("Sistema de triagem automatizada de curriculos com IA")
 
-    # Verificar saude da API
-    if not check_api_health():
-        st.warning(
-            "Backend da API nao esta disponivel. Algumas funcionalidades podem nao funcionar."
-        )
-
-    # Abas
-    tab1, tab2, tab3 = st.tabs(["Nova Analise", "Historico", "Comparar"])
+    tab1, tab2 = st.tabs(["Nova Analise", "Comparar"])
 
     with tab1:
         tab_new_analysis()
 
     with tab2:
-        tab_history()
-
-    with tab3:
         tab_compare()
 
 
