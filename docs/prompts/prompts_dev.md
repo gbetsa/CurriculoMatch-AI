@@ -1363,3 +1363,24 @@ Expandir a Opcao 3 do README com passos claros de configuracao do n8n apos a ini
 - Corrigido comando `psql` para `docker exec -i postgres psql` (compatibilidade com Docker)
 - Removido "opcional" do n8n (Streamlit depende dele)
 - Melhorada secao "Configuracao do n8n" com tabela de passos
+
+---
+
+### Correcao - Versao do n8n para Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Corrigir problema de autenticacao no n8n. Versoes recentes (1.52.0, 1.112.4) exigem setup de owner account, tornando a instalacao complexa.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Entrou e me levou para /setup"
+> "quero simples, um login rapido no n8n"
+
+**Padrao de Prompting:** Usability / DX
+> Usuario queria login simples e rapido, sem wizard de configuracao.
+
+**Resultado e Acao (Saida da IA):**
+- Testadas versoes 1.112.4 e 1.52.0 (ambas exigem /setup)
+- Solucao: fixar n8n na versao 0.236.0 (suporta basic auth direto)
+- docker-compose.n8n.yml atualizado com `n8nio/n8n:0.236.0`
+- Login funciona com admin/curriculomatch sem wizard
