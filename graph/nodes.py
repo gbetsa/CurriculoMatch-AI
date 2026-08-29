@@ -148,7 +148,7 @@ def load_history(state: AgentState) -> AgentState:
         "metadata": {
             "started_at": now,
             "correlation_id": correlation_id,
-            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            "model": os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"),
         },
     }
 
@@ -256,7 +256,7 @@ def extract_information(state: AgentState) -> AgentState:
             "success",
             duration_ms,
             {
-                "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+                "model": os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"),
             },
         )
 
@@ -287,7 +287,7 @@ def analyze_match(state: AgentState) -> AgentState:
         logger,
         "analyze_match",
         {
-            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            "model": os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"),
         },
     )
 
