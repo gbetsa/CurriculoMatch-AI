@@ -77,6 +77,14 @@ def sanitize_inputs(state: AgentState) -> AgentState:
 
     injection_detected = []
 
+    # Sanitizar curriculo se existir
+    curriculum_text = state.get("curriculum_text", "")
+    if curriculum_text:
+        sanitized_curr, detected_curr = sanitize_text(curriculum_text)
+        if detected_curr:
+            injection_detected.extend([f"curriculum: {d}" for d in detected_curr])
+        state["curriculum_text"] = sanitized_curr
+
     # Sanitizar descricao da vaga se existir
     job_description = state.get("job_description", "")
     if job_description:
