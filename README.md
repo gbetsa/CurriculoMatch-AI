@@ -210,6 +210,9 @@ docker-compose up -d
 ### Opcao 2: CLI (python run.py)
 
 ```bash
+# Criar banco de dados (necessario apenas na primeira vez)
+psql -U postgres -c "CREATE DATABASE curriculomatch;"
+
 # Instalar dependencias
 pip install -r requirements.txt
 
@@ -223,6 +226,9 @@ python run.py
 ### Opcao 3: Manual
 
 ```bash
+# Criar banco de dados (necessario apenas na primeira vez)
+psql -U postgres -c "CREATE DATABASE curriculomatch;"
+
 # Terminal 1 - API
 pip install -r requirements.txt
 uvicorn api.main:app --reload --port 8001
