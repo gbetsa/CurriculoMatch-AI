@@ -6,7 +6,6 @@ from graph.nodes import (
     analyze_match,
     extract_information,
     generate_report,
-    load_history,
     read_curriculum_node,
     read_job_node,
     request_approval,
@@ -48,11 +47,10 @@ def build_graph():
     Estrutura do Grafo:
     - Ponto de Entrada -> validate_inputs
     - validate_inputs -> (condicional) -> sanitize_inputs | END
-    - sanitize_inputs -> load_history
-    - load_history -> read_curriculum | read_job (PARALELO)
+    - sanitize_inputs -> read_curriculum | read_job (PARALELO)
     - read_curriculum -> (condicional) -> extract_information | END
     - read_job -> (condicional) -> extract_information | END
-    - extract_information -> analyze_match
+    - extract_information -> analyze_match (busca historico aqui)
     - analyze_match -> request_approval
     - request_approval -> generate_report
     - generate_report -> save_report
@@ -66,7 +64,6 @@ def build_graph():
     # --- Registro dos Nos ---
     graph.add_node("validate_inputs", validate_inputs)
     graph.add_node("sanitize_inputs", sanitize_inputs)
-    graph.add_node("load_history", load_history)
     graph.add_node("read_curriculum", read_curriculum_node)
     graph.add_node("read_job", read_job_node)
     graph.add_node("extract_information", extract_information)
@@ -88,12 +85,9 @@ def build_graph():
         },
     )
 
-    # --- Sanitizacao -> Historico ---
-    graph.add_edge("sanitize_inputs", "load_history")
-
-    # --- Paralelizacao: load_history -> [read_curriculum | read_job] ---
-    graph.add_edge("load_history", "read_curriculum")
-    graph.add_edge("load_history", "read_job")
+    # --- Sanitizacao -> Leitura de Arquivos (PARALELO) ---
+    graph.add_edge("sanitize_inputs", "read_curriculum")
+    graph.add_edge("sanitize_inputs", "read_job")
 
     # --- Arestas Condicionais de Verificacao de Leitura ---
     graph.add_conditional_edges(
