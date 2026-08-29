@@ -19,7 +19,7 @@ from tools.report_writer import save_report
 
 def get_llm() -> ChatGroq:
     """Inicializa e retorna o modelo LLM do Groq configurado."""
-    model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    model_name = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
     return ChatGroq(model=model_name, temperature=0)
 
 
@@ -62,7 +62,7 @@ def validate_inputs(state: AgentState) -> AgentState:
 
 
 def sanitize_inputs(state: AgentState) -> AgentState:
-    """Sanitiza textos de entrada contra prompt injection."""
+    """Sanitiza textos de entrada contra prompt injection e bloqueia se detectado."""
     logger = get_logger(state.get("correlation_id"))
     start_time = time.time()
 
@@ -80,10 +80,10 @@ def sanitize_inputs(state: AgentState) -> AgentState:
     # Sanitizar curriculo se existir
     curriculum_text = state.get("curriculum_text", "")
     if curriculum_text:
-        sanitized_curriculum, detected = sanitize_text(curriculum_text)
-        if detected:
-            injection_detected.extend([f"curriculum: {d}" for d in detected])
-        state["curriculum_text"] = sanitized_curriculum
+        sanitized_curr, detected_curr = sanitize_text(curriculum_text)
+        if detected_curr:
+            injection_detected.extend([f"curriculum: {d}" for d in detected_curr])
+        state["curriculum_text"] = sanitized_curr
 
     # Sanitizar descricao da vaga se existir
     job_description = state.get("job_description", "")
@@ -93,12 +93,26 @@ def sanitize_inputs(state: AgentState) -> AgentState:
             injection_detected.extend([f"job: {d}" for d in detected])
         state["job_description"] = sanitized_job
 
-    # Atualizar metadata com injecoes detectadas
-    metadata = state.get("metadata", {})
+    # Bloquear se injection detectada na vaga
     if injection_detected:
+        metadata = state.get("metadata", {})
         metadata["injection_detected"] = injection_detected
         metadata["sanitized"] = True
-    state["metadata"] = metadata
+        state["metadata"] = metadata
+
+        duration_ms = (time.time() - start_time) * 1000
+        log_node_complete(
+            logger,
+            "sanitize_inputs",
+            "blocked",
+            duration_ms,
+            {"injection_detected": len(injection_detected)},
+        )
+        return {
+            **state,
+            "is_valid": False,
+            "error_message": "Analise bloqueada: prompt injection detectado na descricao da vaga",
+        }
 
     duration_ms = (time.time() - start_time) * 1000
     log_node_complete(
@@ -106,9 +120,7 @@ def sanitize_inputs(state: AgentState) -> AgentState:
         "sanitize_inputs",
         "success",
         duration_ms,
-        {
-            "injection_detected": len(injection_detected),
-        },
+        {"injection_detected": 0},
     )
 
     return state
@@ -173,7 +185,7 @@ def read_curriculum_node(state: AgentState) -> AgentState:
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
         log_error(logger, "read_curriculum", e, duration_ms)
-        return {"is_valid": False, "error_message": str(e)}
+        return {"error_message": f"read_curriculum: {e!s}"}
 
 
 def read_job_node(state: AgentState) -> AgentState:
@@ -205,7 +217,7 @@ def read_job_node(state: AgentState) -> AgentState:
     except Exception as e:
         duration_ms = (time.time() - start_time) * 1000
         log_error(logger, "read_job", e, duration_ms)
-        return {"is_valid": False, "error_message": str(e)}
+        return {"error_message": f"read_job: {e!s}"}
 
 
 def extract_information(state: AgentState) -> AgentState:

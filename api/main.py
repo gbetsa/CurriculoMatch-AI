@@ -102,6 +102,17 @@ async def analyze_curriculum(
         config = {"configurable": {"thread_id": analysis_id}}
         result = graph.invoke(initial_state, config=config)
 
+        # Verificar se o grafo bloqueou a analise (injection detectado)
+        if not result.get("is_valid") and result.get("error_message"):
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "_blocked": True,
+                    "_stage": "api_injection",
+                    "detail": result["error_message"],
+                },
+            )
+
         # Extrair nome do candidato
         candidate_name = "Candidato"
         if result.get("candidate_name"):
@@ -120,6 +131,8 @@ async def analyze_curriculum(
             created_at=datetime.now(),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar analise: {e!s}")
     finally:
@@ -149,56 +162,80 @@ async def analyze_batch(
     batch_id = str(uuid.uuid4())
     results = []
 
-    for curriculum in curriculos:
-        validate_file_upload(curriculum)
+    try:
+        for curriculum in curriculos:
+            analysis_id = str(uuid.uuid4())
+            temp_curr_path = f"temp_curriculum_{analysis_id}.pdf"
+            temp_job_path = f"temp_job_{analysis_id}.txt"
 
-        analysis_id = str(uuid.uuid4())
-        temp_curr_path = f"temp_curriculum_{analysis_id}.pdf"
-        temp_job_path = f"temp_job_{analysis_id}.txt"
+            try:
+                validate_file_upload(curriculum)
 
-        try:
-            content = await curriculum.read()
-            with open(temp_curr_path, "wb") as f:
-                f.write(content)
+                content = await curriculum.read()
+                with open(temp_curr_path, "wb") as f:
+                    f.write(content)
 
-            with open(temp_job_path, "w", encoding="utf-8") as f:
-                f.write(job_description)
+                with open(temp_job_path, "w", encoding="utf-8") as f:
+                    f.write(job_description)
 
-            graph = get_graph()
-            initial_state = {
-                "curriculum_path": temp_curr_path,
-                "job_path": temp_job_path,
-                "job_title": job_title,
-                "job_description": job_description,
-                "is_valid": True,
-            }
+                graph = get_graph()
+                initial_state = {
+                    "curriculum_path": temp_curr_path,
+                    "job_path": temp_job_path,
+                    "job_title": job_title,
+                    "job_description": job_description,
+                    "is_valid": True,
+                }
 
-            config = {"configurable": {"thread_id": analysis_id}}
-            result = graph.invoke(initial_state, config=config)
+                config = {"configurable": {"thread_id": analysis_id}}
+                result = graph.invoke(initial_state, config=config)
 
-            candidate_name = "Candidato"
-            if result.get("candidate_name"):
-                candidate_name = result["candidate_name"]
-            elif result.get("extracted_information"):
-                extracted = result["extracted_information"]
-                candidate_name = extracted.get("candidato", {}).get("nome", "Candidato")
+                # Verificar se o grafo bloqueou a analise (injection detectado)
+                if not result.get("is_valid") and result.get("error_message"):
+                    continue
 
-            results.append(
-                AnalysisResult(
-                    analysis_id=analysis_id,
-                    candidate_name=candidate_name,
-                    job_title=job_title,
-                    score=result.get("compatibility_score", 0),
-                    report=result.get("report", ""),
-                    status="completed",
-                    created_at=datetime.now(),
+                candidate_name = "Candidato"
+                if result.get("candidate_name"):
+                    candidate_name = result["candidate_name"]
+                elif result.get("extracted_information"):
+                    extracted = result["extracted_information"]
+                    candidate_name = extracted.get("candidato", {}).get(
+                        "nome", "Candidato"
+                    )
+
+                results.append(
+                    AnalysisResult(
+                        analysis_id=analysis_id,
+                        candidate_name=candidate_name,
+                        job_title=job_title,
+                        score=result.get("compatibility_score", 0),
+                        report=result.get("report", ""),
+                        status="completed",
+                        created_at=datetime.now(),
+                    )
                 )
-            )
 
-        finally:
-            for p in (temp_curr_path, temp_job_path):
-                if os.path.exists(p):
-                    os.remove(p)
+            except Exception as e:
+                import structlog
+
+                logger = structlog.get_logger()
+                logger.error(
+                    "batch_analysis_error", curriculum=curriculum.filename, error=str(e)
+                )
+                continue
+            finally:
+                for p in (temp_curr_path, temp_job_path):
+                    if os.path.exists(p):
+                        os.remove(p)
+
+    except Exception as e:
+        import structlog
+
+        logger = structlog.get_logger()
+        logger.error("batch_processing_error", error=str(e))
+        raise HTTPException(
+            status_code=500, detail=f"Erro no processamento em lote: {e!s}"
+        )
 
     # Ordenar por score (decrescente)
     results.sort(key=lambda x: x.score, reverse=True)

@@ -1248,3 +1248,32 @@ Dar ao agente IA acesso a analises anteriores similares para comparar resultados
 
 **Commits:**
 - `858a616` feat(history): agente acessa analises anteriores similares via PostgreSQL
+
+---
+
+### Correcao: Estabilidade do Fluxo Principal (Specs 16-17)
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Corrigir falhas no fluxo de analise (single e batch) causadas pelas mudancas dos Specs 16 (n8n guardrails) e 17 (historico).
+
+**Contexto:**
+Apos implementar o fluxo via n8n, o endpoint `/analyze/batch` retornava `results: []` e o endpoint `/analyze` retornava `extracted_information ausente`. Apos investigacao, foram encontrados 3 problemas encadeados:
+
+**Problemas encontrados e corrigidos:**
+
+1. **Modelo Groq `openai/gpt-oss-120b` com rate limit (429)**: O modelo atingiu o limite de tokens diarios (200k TPD). **Correcao:** Trocar para `qwen/qwen3.8-27b` (mais leve, suporta structured output).
+
+2. **`analyze_injection` quebrando o fan-in do LangGraph**: O no `analyze_injection` (LLM-based) retornava `state` (dict completo) ao inves de `{}`, causando conflito com outros nos paralelos no LangGraph. Alem disso, o modelo menor (`llama-3.1-8b-instant`, que nao existe no Groq) nao suportava `with_structured_output`. **Decisao:** Reverter a implementacao do `analyze_injection` (remover do workflow e nodes.py). A deteccao de injection continua sendo feita pelo regex em `sanitize_inputs` (PT+EN).
+
+3. **`INVALID_CONCURRENT_GRAPH_UPDATE`**: Os nos `read_curriculum` e `read_job` retornavam `{"is_valid": False, "error_message": ...}` em paralelo, conflitando na chave `is_valid`. **Correcao:** Remover `is_valid` dos returns de erro, usar apenas `error_message`. O `route_after_read` checa apenas `error_message`.
+
+**Arquivos modificados:**
+- `graph/workflow.py`: removido no `analyze_injection` e suas arestas
+- `graph/nodes.py`: removido `analyze_injection` e `INJECTION_CHECK_PROMPT`; corrigido return de erro em `read_curriculum_node` e `read_job_node`
+- `.env`: `GROQ_MODEL=qwen/qwen3.8-27b`
+- `.env.example`: adicionado `N8N_WEBHOOK_URL`, `N8N_BATCH_WEBHOOK_URL`, removido `API_URL`
+- `api/main.py`: `validate_file_upload` dentro de try/except no batch
+
+**Commits:**
+- `fix: remover analyze_injection do workflow, corrigir concurrent update, trocar modelo Groq`
