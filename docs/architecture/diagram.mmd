@@ -1,0 +1,70 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px' }}}%%
+
+graph TB
+    subgraph UI["Interface (Streamlit)"]
+        S1["Nova Analise<br/>Upload PDF + Vaga"]
+        S2["Comparar<br/>Ranking Multi-Candidatos"]
+    end
+
+    subgraph Guardrails["Guardrails (n8n)"]
+        N1["Recebe Dados<br/>Webhook POST"]
+        N2["Validacao<br/>PDF + Campos"]
+        N3["AI Agent<br/>Deteccao Injection"]
+        N4["Gate<br/>Aprova ou Bloqueia"]
+    end
+
+    subgraph API["API REST (FastAPI)"]
+        A1["POST /analyze<br/>Analise Individual"]
+        A2["POST /analyze/batch<br/>Analise em Lote"]
+        A3["GET /history<br/>Historico Paginado"]
+    end
+
+    subgraph Agente["Agente (LangGraph)"]
+        direction TB
+        G1["validate_inputs<br/>Valida arquivos"]
+        G2["sanitize_inputs<br/>Anti-injection regex"]
+        G3["read_curriculum<br/>Le PDF"]
+        G4["read_job<br/>Le Vaga"]
+        G5["extract_information<br/>LLM Structured Output"]
+        G6["analyze_match<br/>LLM Analise Cruzada"]
+        G7["generate_report<br/>Monta Markdown"]
+        G8["save_report<br/>Persiste resultado"]
+
+        G1 --> G2
+        G2 --> G3
+        G2 --> G4
+        G3 --> G5
+        G4 --> G5
+        G5 --> G6
+        G6 --> G7
+        G7 --> G8
+    end
+
+    subgraph DB["Banco de Dados"]
+        PG[(PostgreSQL<br/>Checkpointer)]
+    end
+
+    subgraph LLM["LLM (Groq)"]
+        L1["qwen/qwen3.8-27b<br/>Extract + Analyze"]
+    end
+
+    S1 --> N1
+    S2 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 -->|Aprovado| A1
+    N4 -->|Aprovado| A2
+    A1 --> G1
+    A2 --> G1
+    G5 -.-> L1
+    G6 -.-> L1
+    G8 -.-> PG
+    A3 -.-> PG
+
+    style UI fill:#e1f5fe,stroke:#0288d1
+    style Guardrails fill:#fff3e0,stroke:#f57c00
+    style API fill:#e8f5e9,stroke:#388e3c
+    style Agente fill:#f3e5f5,stroke:#7b1fa2
+    style DB fill:#fce4ec,stroke:#c62828
+    style LLM fill:#fffde7,stroke:#f9a825

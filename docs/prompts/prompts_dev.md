@@ -1277,3 +1277,130 @@ Apos implementar o fluxo via n8n, o endpoint `/analyze/batch` retornava `results
 
 **Commits:**
 - `fix: remover analyze_injection do workflow, corrigir concurrent update, trocar modelo Groq`
+
+---
+
+### Implementacao - Spec 18 (Documentacao e Entrega)
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Implementar toda a documentacao do projeto para entrega final: README completo (11 secoes), CONTRIBUTING.md, CHANGELOG.md, diagrama de arquitetura Mermaid, design-decisions.md, release-notes, system_prompts.md, reproduction_guide, docker-compose.yml completo e evidencias de QA.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed."
+
+**Padrao de Prompting:** Delegation / Continuation
+> Usuario autorizou a continuacao do trabalho de documentacao sem restricoes especificas.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/18-documentation` a partir de `develop`
+- Criacao de `README.md` completo com 11 secoes (1. Descricao, 2. Classificacao, 3. Tool, 4. Contexto, 5. Seguranca, 6. Pre-requisitos, 7. Instalacao, 8. QA, 9. Low-Code, 10. Cenarios, 11. Analise Critica)
+- Criacao de `CONTRIBUTING.md` com setup, commits, PRs, testes e Docker
+- Criacao de `CHANGELOG.md` com historico v0.1.0 a v1.0.0
+- Criacao de `docker-compose.yml` completo (API + Streamlit + PostgreSQL + n8n)
+- Criacao de `docs/architecture/diagram.mmd` (diagrama Mermaid)
+- Criacao de `docs/design-decisions.md` (12 decisoes documentadas)
+- Criacao de `docs/release-notes-v1.0.0.md`
+- Criacao de `docs/prompts/system_prompts.md` (prompts consolidados)
+- Criacao de `docs/lowcode/reproduction_guide.md` (guia de reproducao n8n)
+- Atualizacao de `docs/prompts/refinement_log.md` (ciclo 1)
+- Atualizacao de `docs/prompts/prompts_dev.md` (interacoes do projeto final)
+- PR #50 aberto e aguardando merge
+
+---
+
+### Correcao - Criacao de Banco de Dados na Documentacao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar instrucao de criacao do banco de dados `curriculomatch` nas Opcoes 2 e 3 do README, ja que o `PostgresSaver` so cria tabelas e nao o banco em si.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Isso esta na documentacao?"
+
+**Padrao de Prompting:** Validation / Documentation gap
+> Usuario identificou que a instrucao de criacao do banco nao estava documentada nas opcoes de instalacao.
+
+**Resultado e Acao (Saida da IA):**
+- Adicionado `psql -U postgres -c "CREATE DATABASE curriculomatch;"` nas Opcoes 2 e 3 do README
+- Nota: Opcao 1 (Docker Compose) ja cria o banco automaticamente via `POSTGRES_DB`
+
+---
+
+### Documentacao - Pre-requisitos e Numeracao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar secao de pre-requisitos ao README e corrigir numeracao das secoes. Atualizar CONTRIBUTING.md removendo "opcional" de PostgreSQL e Docker.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Os requisitos dizem que deve ter python, postgres e docker? Alem do n8n que instalara no docker"
+
+**Padrao de Prompting:** Documentation alignment
+> Usuario questionou se os pre-requisitos estavam claros na documentacao.
+
+**Resultado e Acao (Saida da IA):**
+- Criada secao "6. Pre-requisitos" no README com Python 3.12+, PostgreSQL 15+, Docker + Docker Compose e Git
+- Renumeradas secoes 6-10 para 7-11 no README
+- Atualizado CONTRIBUTING.md: removido "(opcional, para checkpointer)" de PostgreSQL e "(opcional, para n8n)" de Docker
+
+---
+
+### Melhoria - Instrucoes de Instalacao n8n no README
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Expandir a Opcao 3 do README com passos claros de configuracao do n8n apos a inicializacao, incluindo importacao do workflow, configuracao de credenciais e ativacao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Nao, quero que a documentacao fique facil de entender, deve ter referencias no passo a passo para essa instalacao"
+
+**Padrao de Prompting:** Documentation improvement
+> Usuario identificou que a instalacao manual nao explicava os passos de configuracao do n8n, tornando difcil para novo usuario.
+
+**Resultado e Acao (Saida da IA):**
+- Expandida Opcao 3 do README com pos-instalacao do n8n (5 passos)
+- Corrigido comando `psql` para `docker exec -i postgres psql` (compatibilidade com Docker)
+- Removido "opcional" do n8n (Streamlit depende dele)
+- Melhorada secao "Configuracao do n8n" com tabela de passos
+
+---
+
+### Correcao - Versao do n8n para Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Corrigir problema de autenticacao no n8n. Versoes recentes (1.52.0, 1.112.4) exigem setup de owner account, tornando a instalacao complexa.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Entrou e me levou para /setup"
+> "quero simples, um login rapido no n8n"
+
+**Padrao de Prompting:** Usability / DX
+> Usuario queria login simples e rapido, sem wizard de configuracao.
+
+**Resultado e Acao (Saida da IA):**
+- Testadas versoes 1.112.4 e 1.52.0 (ambas exigem /setup)
+- Solucao: fixar n8n na versao 0.236.0 (suporta basic auth direto)
+- docker-compose.n8n.yml atualizado com `n8nio/n8n:0.236.0`
+- Login funciona com admin/curriculomatch sem wizard
+
+---
+
+### Correcao - n8n Latest com Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Usar versao latest do n8n com login simples, sem wizard de configuracao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "nao, use a versao mais recente do n8n"
+
+**Padrao de Prompting:** Direct request
+> Usuario insistiu em usar a versao latest, nao quer versao antiga.
+
+**Resultado e Acao (Saida da IA):**
+- Container com `n8nio/n8n:latest` (1.112.4)
+- Adicionado `N8N_USER_MANAGEMENT_DISABLED=true` ao environment
+- Variavel desabilita o wizard de setup e permite basic auth direto
+- docker-compose.n8n.yml atualizado com latest + variavel de desabilitacao
