@@ -1384,3 +1384,23 @@ Corrigir problema de autenticacao no n8n. Versoes recentes (1.52.0, 1.112.4) exi
 - Solucao: fixar n8n na versao 0.236.0 (suporta basic auth direto)
 - docker-compose.n8n.yml atualizado com `n8nio/n8n:0.236.0`
 - Login funciona com admin/curriculomatch sem wizard
+
+---
+
+### Correcao - n8n Latest com Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Usar versao latest do n8n com login simples, sem wizard de configuracao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "nao, use a versao mais recente do n8n"
+
+**Padrao de Prompting:** Direct request
+> Usuario insistiu em usar a versao latest, nao quer versao antiga.
+
+**Resultado e Acao (Saida da IA):**
+- Container com `n8nio/n8n:latest` (1.112.4)
+- Adicionado `N8N_USER_MANAGEMENT_DISABLED=true` ao environment
+- Variavel desabilita o wizard de setup e permite basic auth direto
+- docker-compose.n8n.yml atualizado com latest + variavel de desabilitacao
