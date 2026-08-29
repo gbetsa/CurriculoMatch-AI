@@ -7,8 +7,8 @@ Obrigado por contribuir! Este guia explica como configurar o ambiente, rodar tes
 ## Pre-requisitos
 
 - Python 3.12+
-- PostgreSQL 15+ (opcional, para checkpointer)
-- Docker + Docker Compose (opcional, para n8n)
+- PostgreSQL 15+
+- Docker + Docker Compose
 - Git
 
 ## Setup do Ambiente
