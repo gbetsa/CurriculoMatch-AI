@@ -439,7 +439,7 @@ Ciclo de refinamento de prompts documentado em `docs/prompts/refinement_log.md`:
 
 ### Video de Demonstracao
 
-[Link para video de demonstracao (10 min)](em breve)
+Link para video de demonstracao (https://youtu.be/PN9TDzbBO_E)
 
 ---
 
