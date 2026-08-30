@@ -1,6 +1,6 @@
 # Tech.md
 
-# Documento Técnico
+# Documento Tecnico
 
 ## Projeto
 
@@ -10,7 +10,9 @@
 
 # Objetivo
 
-Desenvolver um agente de IA utilizando **Python** e **LangGraph** para realizar a triagem inicial de currículos, comparando um currículo em PDF com uma descrição de vaga e gerando um relatório de compatibilidade.
+Desenvolver um agente de IA utilizando **Python** e **LangGraph** para realizar a triagem inicial de curriculos, comparando um curriculo em PDF com uma descricao de vaga e gerando um relatorio de compatibilidade.
+
+**Evolucao:** A solucao agora inclui API REST, interface web, memoria persistente, seguranca, observabilidade, testes E2E, DevOps inteligente e automacao low-code.
 
 ---
 
@@ -22,22 +24,51 @@ Desenvolver um agente de IA utilizando **Python** e **LangGraph** para realizar 
 
 ## Frameworks
 
-* LangGraph
-* LangChain
+* LangGraph (orquestracao de agentes)
+* LangChain (integracao com LLMs)
+* FastAPI (API REST)
+* Streamlit (interface web)
+
+## Banco de Dados
+
+* PostgreSQL (checkpointer LangGraph via PostgresSaver)
 
 ## Modelo de IA
 
-* Agnóstico / Adaptativo (Suporta qualquer LLM compatível com LangChain, como OpenAI, Grok, Anthropic, Llama, configurável por variável de ambiente)
+* Agnostico / Adaptativo (Suporta qualquer LLM compativel com LangChain)
+* Configuravel via variavel de ambiente `LLM_MODEL`
+* Provedores suportados: Groq (padrao), OpenAI, Ollama (fallback local)
 
-## Bibliotecas
+## Bibliotecas Principais
 
-* langgraph
-* langchain
-* Pacotes de provedor conforme necessidade (ex: langchain-openai, langchain-xai, langchain-anthropic)
-* python-dotenv
+* langgraph + langgraph-checkpoint-postgres
+* langchain + langchain-groq
+* fastapi + uvicorn + python-multipart
+* streamlit
+* psycopg[pool] (driver PostgreSQL)
+* structlog (logs estruturados)
+* tenacity (retry/timeout/fallback)
+* langsmith (traces)
 * pydantic
-* pymupdf (fitz)
-* pathlib
+* pymupdf (leitura de PDF)
+* python-dotenv
+
+## Ferramentas de Qualidade
+
+* pytest + pytest-mock (testes)
+* ruff / flake8 (lint)
+* mypy (type check)
+* black (formatacao)
+
+## Low-Code
+
+* n8n (automacao visual, self-hosted via Docker)
+
+## Observabilidade
+
+* structlog (logs JSON estruturados)
+* LangSmith (traces por no)
+* Tenacity (tratamento de falhas com retry/timeout/fallback)
 
 ---
 
@@ -45,55 +76,113 @@ Desenvolver um agente de IA utilizando **Python** e **LangGraph** para realizar 
 
 ```text
 curriculomatch-ai/
-
+├── api/
+│   ├── main.py              # FastAPI endpoints
+│   ├── schemas.py           # Pydantic request/response
+│   └── dependencies.py      # Rate limit, validacao
+├── streamlit_app.py         # Interface web
 ├── graph/
-│   ├── state.py
-│   ├── nodes.py
-│   └── workflow.py
-│
+│   ├── state.py             # AgentState v2 + AnalysisRecord
+│   ├── nodes.py             # Nos do grafo (originais + novos)
+│   ├── workflow.py          # Grafo com paralelizacao + checkpointer
+│   ├── checkpointer.py      # PostgresSaver config
+│   ├── observability.py     # Logs estruturados + correlation_id
+│   ├── resilience.py        # Tenacity wrapper para LLM
+│   └── security.py          # Sanitizacao + aprovacao humana
 ├── tools/
-│   ├── pdf_reader.py
-│   ├── job_reader.py
-│   └── report_writer.py
-│
+│   ├── pdf_reader.py        # Leitura de PDF (PyMuPDF)
+│   ├── job_reader.py        # Leitura de TXT (UTF-8/CP1252)
+│   └── report_writer.py     # Escrita de relatorio Markdown
 ├── prompts/
-│   ├── analyze_prompt.py
-│   └── extract_prompt.py
-│
+│   ├── extract_prompt.py    # Prompt de extracao estruturada
+│   └── analyze_prompt.py    # Prompt de analise de compatibilidade
+├── tests/
+│   ├── test_tools.py        # Testes unitarios das tools
+│   ├── test_nodes.py        # Testes unitarios dos nos
+│   ├── test_integration.py  # Testes de integracao (grafo completo)
+│   ├── test_e2e.py          # Testes E2E (API -> Grafo -> Resposta)
+│   └── test_security.py     # Testes de cenario adversarial
+├── lowcode/
+│   └── n8n_workflow.json    # Workflow exportado do n8n
+├── scripts/
+│   ├── analyze_ci_logs.py   # IA analisa logs do CI
+│   ├── analyze_execution.py # Reconstrui execucao a partir dos logs
+│   └── detect_anomaly.py    # Deteccao de anomalias + tendencia
+├── docs/
+│   ├── prompts/
+│   │   ├── system_prompts.md
+│   │   └── refinement_log.md
+│   ├── qa/
+│   │   ├── ai_code_review.md
+│   │   ├── test_plan.md
+│   │   └── risk_matrix.md
+│   ├── evidencias/
+│   │   ├── ci_log_analysis.md
+│   │   ├── anomaly_report.md
+│   │   └── execution_trace.json
+│   ├── lowcode/
+│   │   └── reproduction_guide.md
+│   └── architecture/
+│       └── diagram.mmd
 ├── input/
-│   ├── curriculo.pdf
-│   └── vaga.txt
-│
+│   ├── curriculo.pdf        # Dados de teste (nao versionados)
+│   └── vaga.txt             # Dados de teste (nao versionados)
 ├── output/
-│   └── relatorio.md
-│
-├── main.py
-├── README.md
-├── requirements.txt
-├── .env
-└── .env.example
+│   └── relatorio.md         # Relatorios gerados (nao versionados)
+├── logs/                    # Logs JSON estruturados (nao versionados)
+├── .github/
+│   └── workflows/ci.yml     # Pipeline CI/CD
+├── docker-compose.yml       # API + Streamlit + PostgreSQL + n8n
+├── Dockerfile               # Container da API
+├── main.py                  # CLI original (mantido)
+├── requirements.txt         # Dependencias com versoes fixadas
+├── .env.example             # Variaveis de ambiente (sem valores reais)
+├── .gitignore               # Protecao de segredos e dados
+└── README.md                # Documentacao completa
 ```
 
 ---
 
 # Arquitetura
 
-O projeto será dividido em quatro camadas.
+O projeto esta dividido em 7 camadas.
 
-## 1. Entrada
+## 1. Interface (UI)
 
-Responsável por localizar e validar os arquivos enviados pelo usuário.
+Responsavel pela interacao visual do usuario.
 
-Entrada:
-
-* input/curriculo.pdf
-* input/vaga.txt
+* Streamlit (3 abas: Nova Analise, Historico, Comparar)
+* CLI (main.py) mantido para compatibilidade
 
 ---
 
-## 2. Ferramentas (Tools)
+## 2. API (Backend)
 
-Ferramentas responsáveis por acessar arquivos.
+Camada de servicos REST.
+
+* FastAPI com endpoints: /analyze, /analyze/batch, /history, /health
+* Validacao Pydantic em todas as entradas
+* Rate limit e CORS configurados
+
+---
+
+## 3. Agente (Core)
+
+Responsavel por:
+
+* controlar o fluxo via LangGraph
+* armazenar contexto no AgentState
+* chamar ferramentas deterministicamente
+* solicitar analise ao modelo de IA (LLM)
+* gerar resposta final estruturada
+* gerenciar memoria persistente (PostgreSQL)
+* aplicar seguranca (sanitizacao, aprovacao)
+
+---
+
+## 4. Ferramentas (Tools)
+
+Ferramentas responsaveis por acessar arquivos locais.
 
 ### PDF Reader
 
@@ -103,8 +192,6 @@ Responsabilidades:
 * extrair texto
 * retornar string
 
----
-
 ### Job Reader
 
 Responsabilidades:
@@ -112,36 +199,36 @@ Responsabilidades:
 * abrir vaga.txt
 * retornar texto
 
----
-
 ### Report Writer
 
 Responsabilidades:
 
-* criar pasta output se necessário
-* salvar relatório em Markdown
+* criar pasta output se necessario
+* salvar relatorio em Markdown
 
 ---
 
-## 3. Agente
+## 5. Persistencia (Database)
 
-Responsável por:
-
-* controlar o fluxo
-* armazenar contexto
-* chamar ferramentas
-* solicitar análise ao modelo
-* gerar resposta final
+* PostgreSQL com PostgresSaver (checkpointer LangGraph)
+* Historico de analises acessivel para comparacao
+* Time-travel debugging
 
 ---
 
-## 4. Saída
+## 6. Observabilidade
 
-Arquivo:
+* Logs JSON estruturados (structlog)
+* Traces por no (LangSmith)
+* Metricas: latencia, tokens, taxa de erro
+* Script de investigacao de execucoes
 
-```text
-output/relatorio.md
-```
+---
+
+## 7. Integracao Externa
+
+* n8n (automacao visual: email/webhook -> API -> Slack)
+* Webhook para curriculos automaticos
 
 ---
 
@@ -149,37 +236,27 @@ output/relatorio.md
 
 ```text
 START
-
-↓
-
+  |
 validate_inputs
-
-↓
-
-read_curriculum
-
-↓
-
-read_job
-
-↓
-
+  |
+sanitize_inputs
+  |
+load_history
+  |
++-- read_curriculum --+  (PARALELO)
+|                     |
++-- read_job ---------+
+  |
 extract_information
-
-↓
-
+  |
 analyze_match
-
-↓
-
+  |
+request_approval
+  |
 generate_report
-
-↓
-
+  |
 save_report
-
-↓
-
+  |
 END
 ```
 
@@ -187,150 +264,99 @@ END
 
 # State
 
-Todo o contexto será compartilhado através do State do LangGraph.
+Todo o contexto sera compartilhado atraves do State do LangGraph.
 
 ```python
 class AgentState(TypedDict):
-
+    # Original
     curriculum_path: str
-
     job_path: str
-
     curriculum_text: str
-
     job_description: str
-
     extracted_information: dict
-
     compatibility_score: int
-
     analysis: str
-
     report: str
+
+    # Novo (Projeto Final)
+    history: List[Dict[str, Any]]
+    approval_required: bool
+    approval_decision: Optional[str]
+    correlation_id: str
+    metadata: Dict[str, Any]
 ```
 
-Cada nó poderá ler e atualizar essas informações.
+Cada no podera ler e atualizar essas informacoes.
 
 ---
 
-# Nós
+# Nos
 
 ## validate_inputs
 
-Responsável por:
+Responsavel por:
 
-* verificar existência dos arquivos
-* validar extensão
-* validar conteúdo
+* verificar existencia dos arquivos
+* validar extensao
+* validar conteudo
 
-Entrada:
+## sanitize_inputs
 
-* caminho dos arquivos
+Responsavel por:
 
-Saída:
+* detectar padroes de prompt injection
+* sanitizar textos antes de enviar ao LLM
 
-* state atualizado
+## load_history
 
----
+Responsavel por:
+
+* recuperar analises anteriores do PostgreSQL
+* popular campo history no estado
 
 ## read_curriculum
 
-Utiliza:
-
-PDF Reader
-
-Responsável por:
-
-* extrair texto do currículo
-
-Atualiza:
-
-```text
-curriculum_text
-```
-
----
+Utiliza: PDF Reader
+Atualiza: curriculum_text
 
 ## read_job
 
-Utiliza:
-
-Job Reader
-
-Atualiza:
-
-```text
-job_description
-```
-
----
+Utiliza: Job Reader
+Atualiza: job_description
 
 ## extract_information
 
-Responsável por identificar:
-
-Currículo:
-
-* nome
-* email
-* telefone
-* habilidades
-* formação
-* experiências
-* idiomas
-
-Vaga:
-
-* cargo
-* tecnologias
-* requisitos
-* diferenciais
-
-Atualiza:
-
-```text
-extracted_information
-```
-
----
+Responsavel por identificar dados estruturados do curriculo e da vaga.
+Atualiza: extracted_information
 
 ## analyze_match
 
-Responsável por:
+Responsavel por:
 
-* comparar currículo e vaga
+* comparar curriculo e vaga
 * calcular compatibilidade
-* produzir análise
+* produzir analise
 
-Atualiza:
+Atualiza: compatibility_score, analysis
 
-```text
-compatibility_score
+## request_approval
 
-analysis
-```
+Responsavel por:
 
----
+* pausar execucao para aprovacao humana
+* aguardar decisao do usuario
+
+Atualiza: approval_required, approval_decision
 
 ## generate_report
 
-Responsável por montar o relatório final em Markdown.
-
-Atualiza:
-
-```text
-report
-```
-
----
+Responsavel por montar o relatorio final em Markdown.
+Atualiza: report
 
 ## save_report
 
-Utiliza:
-
-Report Writer
-
-Responsável por salvar o relatório.
+Utiliza: Report Writer
+Responsavel por salvar o relatorio.
 
 ---
 
@@ -338,165 +364,123 @@ Responsável por salvar o relatório.
 
 ## PDF Reader
 
-Entrada
-
-```text
-input/curriculo.pdf
-```
-
-Saída
-
-```python
-str
-```
-
----
+Entrada: input/curriculo.pdf
+Saida: str
 
 ## Job Reader
 
-Entrada
-
-```text
-input/vaga.txt
-```
-
-Saída
-
-```python
-str
-```
-
----
+Entrada: input/vaga.txt
+Saida: str
 
 ## Report Writer
 
-Entrada
-
-```python
-str
-```
-
-Saída
-
-```text
-output/relatorio.md
-```
+Entrada: str
+Saida: output/relatorio.md
 
 ---
 
 # Prompts
 
-O projeto utilizará dois prompts principais.
+O projeto utiliza dois prompts principais.
 
-## Prompt de Extração
+## Prompt de Extracao
 
-Objetivo:
+Objetivo: Extrair informacoes estruturadas do curriculo e da vaga.
+Saida esperada: JSON com CurriculumData + JobData
 
-Extrair informações estruturadas do currículo e da vaga.
+## Prompt de Analise
 
-Saída esperada:
-
-```json
-{
-  "nome": "",
-  "habilidades": [],
-  "experiencias": [],
-  "formacao": "",
-  "idiomas": [],
-  "requisitos": []
-}
-```
-
----
-
-## Prompt de Análise
-
-Objetivo:
-
-Comparar currículo e vaga.
-
-O modelo deverá gerar:
-
-* resumo
-* compatibilidade
-* pontos fortes
-* pontos de melhoria
-* recomendações
+Objetivo: Comparar curriculo e vaga.
+Saida esperada: Markdown com score, pontos fortes, gaps, recomendacoes.
 
 ---
 
 # Tratamento de Erros
 
-O agente deverá tratar:
+O agente trata:
 
-* currículo inexistente
+* curriculo inexistente
 * vaga inexistente
-* PDF vazio
-* vaga vazia
-* erro na leitura do PDF
-* erro ao salvar relatório
+* PDF vazio ou corrompido
+* falha de leitura
+* falha de extracao LLM (com retry + fallback)
+* falha ao salvar relatorio
 
-Em caso de erro, a execução será interrompida com uma mensagem descritiva.
-
----
-
-# Segurança
-
-* Utilizar `.env` para armazenar as credenciais de forma genérica (ex: `LLM_API_KEY`, `LLM_PROVIDER`).
-* Nunca versionar `.env`.
-* Disponibilizar apenas `.env.example`.
-* Validar entradas antes do processamento.
+Em caso de erro, a execucao e interrompida com mensagem descritiva ou desvia para END.
 
 ---
 
-# Dependências
+# Seguranca
+
+* Utilizar `.env` para armazenar credenciais (LLM_API_KEY, DATABASE_URL, etc.)
+* Nunca versionar `.env`
+* Disponibilizar apenas `.env.example`
+* Validar entradas com Pydantic antes do processamento
+* Sanitizar textos contra prompt injection
+* Aprovacao humana antes de acoes destrutivas
+* Cenario adversarial testado e documentado
+
+---
+
+# Dependencias
 
 ```text
-langgraph
-langchain
-langchain-openai (ou pacote do provedor escolhido)
-python-dotenv
-pymupdf
-pydantic
+langgraph==1.2.9
+langgraph-checkpoint-postgres==1.2.9
+langchain==1.3.13
+langchain-groq==1.1.3
+langchain-core==1.4.9
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+python-multipart==0.0.20
+streamlit==1.45.1
+requests==2.32.3
+psycopg[pool]==3.1.18
+structlog==25.4.0
+tenacity==9.1.2
+langsmith==0.3.4
+python-dotenv==1.2.2
+pydantic==2.13.4
+pymupdf==1.28.0
+pytest==8.3.4
+pytest-mock==3.14.0
 ```
 
 ---
 
-# Execução
+# Execucao
 
-Instalar dependências:
+## Opcao 1: CLI
 
 ```bash
-pip install -r requirements.txt
+python main.py --curriculo input/curriculo.pdf --vaga input/vaga.txt
 ```
 
-Adicionar:
-
-```text
-input/curriculo.pdf
-input/vaga.txt
-```
-
-Executar:
+## Opcao 2: Docker Compose
 
 ```bash
-python main.py
+docker-compose up
 ```
 
-O relatório será gerado automaticamente em:
+Servicos: API (:8000), Streamlit (:8501), PostgreSQL (:5432), n8n (:5678)
 
-```text
-output/relatorio.md
+## Opcao 3: Manual
+
+```bash
+# Terminal 1 - API
+uvicorn api.main:app --reload
+
+# Terminal 2 - Streamlit
+streamlit run streamlit_app.py
 ```
 
 ---
 
-# Próximas Evoluções
+# Possiveis Evolucoes
 
-* Suporte a múltiplos currículos.
-* Comparação entre candidatos.
-* Interface web com Streamlit.
-* Exportação em PDF.
-* Histórico de análises.
-* Ranking de candidatos.
-* Integração com APIs de recrutamento.
+* Exportacao em PDF do relatorio
+* Integracao com APIs de recrutamento (LinkedIn, Gupy)
+* Suporte a OCR para PDFs baseados em imagem
+* Dashboard de metricas em tempo real
+* Notificacoes push para recrutadores
+* Multi-idioma (inglues, espanhol)

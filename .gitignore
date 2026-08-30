@@ -21,6 +21,9 @@ __pycache__/
 output/
 *.log
 
+# Logs estruturados
+logs/
+
 # Ferramentas e editores
 .vscode/
 .idea/
@@ -34,3 +37,15 @@ comment_body.md
 # Arquivos de input (dados pessoais — não versionar)
 input/*.pdf
 input/*.txt
+
+# Temp files da API
+temp_*.pdf
+temp_*.txt
+
+# Caches de ferramentas
+.pytest_cache/
+.ruff_cache/
+
+# Artefatos de teste na raiz
+test_body.json
+test_curriculum.pdf

@@ -485,3 +485,922 @@ Mesmo não sendo um requisito formal do Mini-Projeto, o usuário quis ir além e
 - Modificação no `ci.yml` do GitHub Actions para rodar a suíte `pytest tests/` no CI.
 - Criação de mocks robustos (como `RunnableLambda`) simulando o comportamento condicional da LLM para extração da RegEx em testes unitários.
 - 6 testes isolados escritos com sucesso nas rotinas de validação de arquivos (`read_curriculum`, `read_job`) e geração (`save_report`).
+
+---
+
+# ==========================================
+# PROJETO FINAL - M2.2 (Nota 60%)
+# Evolução do CurriculoMatch-AI
+# ==========================================
+
+---
+
+### Análise - Gap Analysis Projeto Final vs Projeto Atual
+**Data:** 21 de Agosto de 2026, 14:30
+
+**Objetivo:**
+Analisar o projeto CurriculoMatch-AI existente e comparar com os requisitos do projeto final (M2.2), mapeando todos os gaps que precisam ser preenchidos para atingir nota máxima.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Tenho esse projeto que foi feito para um mini projeto do curso, agora tenho um ultimo projeto final, que pode ser usado esse como base para fazer, quero uma analise desse projeto e comparar com os requisitos do novo projeto, para sabermos oq falta ser feito para tirar 10"
+
+**Padrão de Prompting:** Analysis-driven / Gap Analysis
+> O usuário solicitou uma análise comparativa entre o estado atual do projeto e os requisitos do edital do projeto final, identificando lacunas tecnicamente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura completa do repositório: todos os arquivos de /graph, /tools, /prompts, /docs, /tests, main.py, requirements.txt, .env.example, .gitignore, .github/workflows/ci.yml
+- Análise de git log e branches existentes
+- Mapeamento dos 15 critérios de avaliação do edital contra o que existe
+- Relatório de gap analysis detalhado: ~2.5/10 estimado, com 11 itens faltantes
+- Categorização dos gaps: Bloco Crítico (memória, segurança, observabilidade), Bloco Alto (paralelização, testes E2E, DevOps, low-code), Bloco Médio (docs, Kanban, vídeo)
+
+---
+
+### Planejamento - Definição de Estratégia e Caminhos
+**Data:** 21 de Agosto de 2026, 14:45
+
+**Objetivo:**
+Apresentar ao usuário as opções de como evoluir o projeto (expandir domínio, reconstruir, ou evoluir existente) e validar a direção escolhida.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, voce entendeu a ideia do projeto atual e do novo projeto. Como esse novo projeto pode ser estruturado? Não quero nada de planejamento ou codigo ainda, apenas uma ideia"
+
+**Padrão de Prompting:** Consultoria / Strategy
+> O usuário pediu uma visão conceitual de estruturas possíveis, sem compromisso de implementação.
+
+**Resultado e Ação (Saída da IA):**
+- Apresentação de 3 caminhos: (A) Recrutador Inteligente Completo, (B) Agent Factory, (C) Recrutador + HR Copilot
+- Recomendação do Caminho A (evolução natural, domínio conhecido, gaps encaixam)
+- Validação do usuário: Caminho A escolhido
+
+---
+
+### Planejamento - Conceito Estrutural do Caminho A
+**Data:** 21 de Agosto de 2026, 14:55
+
+**Objetivo:**
+Detalhar conceitualmente como o Caminho A ("Recrutador Inteligente Completo") seria estruturado.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Com o caminho A, como pode ser feito?"
+
+**Padrão de Prompting:** Conceptual / Architecture Design
+> O usuário pediu uma visão estrutural do que mudaria na arquitetura.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama conceitual de 6 componentes novos: memória entre execuções, comparação multi-candidato, cenário de falha real, segurança e aprovação, observabilidade, low-code
+- Tabela de capacidades "antes vs depois"
+- Justificativa de por que encaixa nos critérios do edital
+
+---
+
+### Planejamento - Conceito Low-Code n8n
+**Data:** 21 de Agosto de 2026, 15:05
+
+**Objetivo:**
+Detalhar como seria o fluxo de automação low-code usando n8n.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Como seria o low code? O fluxo do n8n por exemplo?"
+
+**Padrão de Prompting:** Technical Deep-Dive
+> O usuário pediu detalhamento técnico do componente low-code.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama bloco-a-bloco: Gatilho (Email/Webhook) → Processamento → Chama API → Saída (Slack/Email)
+- Fluxo alternativo para vagas recebidas via Google Forms
+- Justificativa de por que conta como low-code no edital
+- Instruções de demonstração no vídeo
+
+---
+
+### Análise - Documentação Oficial Revisada
+**Data:** 21 de Agosto de 2026, 15:20
+
+**Objetivo:**
+Revisar a documentação oficial atualizada do projeto final e comparar com a análise anterior.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Saiu a documentação oficial do projeto final, vou te mandar os requisitos e check list."
+
+**Padrão de Prompting:** Validation / Re-analysis
+> O usuário forneceu o documento oficial completo e pediu revalidação.
+
+**Resultado e Ação (Saída da IA):**
+- Recebimento e análise completa do documento oficial (4. REQUISITOS, 5. ROTEIRO, 6. CRITÉRIOS, 7. CHECKLIST)
+- Confirmação: gaps anteriores permanecem válidos
+- Identificação de que o checklist tem 4 blocos: Repositório, Domínio/Arquitetura, Segurança/Observabilidade, QA/DevOps/Low-Code
+- Planejamento de execução em 8 fases com estimativa de 10 dias
+
+---
+
+### Planejamento - Decisões Técnicas
+**Data:** 21 de Agosto de 2026, 15:35
+
+**Objetivo:**
+Validar decisões técnicas: PostgreSQL vs SQLite para memória, RAG vs checkpointer.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Tenho o postgres instalado, seria melhor e mais facil que o SqliteSaver"
+> "O projeto não pede RAG?"
+
+**Padrão de Prompting:** Technical Decision / Clarification
+> O usuário validou decisões técnicas e esclareceu requisitos do edital.
+
+**Resultado e Ação (Saída da IA):**
+- Decisão: PostgreSQL com `PostgresSaver` (não SQLite) —.justificada por ser "produção real"
+- Decisão: Checkpointer persistente (não RAG) — edital permite "state, checkpointer, persistência OU RAG"
+- Decisão: Streamlit para UI (mais rápido que Gradio para data apps)
+- Decisão: n8n local via Docker (self-hosted, gratuito, visual)
+
+---
+
+### Planejamento - Fluxo de Uso Completo
+**Data:** 21 de Agosto de 2026, 15:50
+
+**Objetivo:**
+Detalhar o fluxo de uso de ponta a ponta: usuário na web → API → agente → banco → resposta.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Como seria o fluxo de uso? ex. Usuario entra na pagina web, sobe arquivos, requisita o python..."
+
+**Padrão de Prompting:** User Flow / UX Design
+> O usuário pediu visualização do fluxo de uso completo.
+
+**Resultado e Ação (Saída da IA):**
+- Diagrama completo: Usuário → Streamlit → FastAPI → LangGraph → PostgreSQL
+- Passo a passo: upload → validação → processamento paralelo → extração LLM → análise → aprovação → relatório
+- Cenário "Comparar Candidatos": 1 vaga + N currículos → ranking
+- Cenário "n8n Low-Code": email → webhook → API → Slack
+- Mapeamento: o que já existe vs o que é novo
+
+---
+
+### Implementação - Criação de Specs do Projeto Final
+**Data:** 21 de Agosto de 2026, 16:10
+
+**Objetivo:**
+Criar especificações detalhadas para cada tarefa do projeto final, seguindo o padrão de numeração existente (01-08).
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "quero que vc gere um arquivo de specs em docs, ja temos as pastas, e lembre de consultar as documentações em docs, nos arquivos .md. Comece criando uma nova branch para essa tarefa"
+> "Pare, não esta funcionando, quero que em specs, crie as specs separadas por tarefas, seguindo o padrão de numeração"
+
+**Padrão de Prompting:** Constraint-based / Process Correction
+> O usuário corrigiu o formato (specs separadas, não arquivo único) e reforçou o padrão existente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura de todas as specs existentes (01-08) para identificar padrão de formato
+- Criação da branch `feature/final-project-spec` a partir de `develop`
+- Criação de 10 novas specs seguindo o padrão: Bloco N + Descrição + Critérios de Aceite + Dependências + Branch Sugerida
+- Specs criadas: 09 (Memória), 10 (API), 11 (Streamlit), 12 (Segurança), 13 (Observabilidade), 14 (QA com IA), 15 (DevOps), 16 (Low-Code), 17 (Prompts/Refinamento), 18 (Documentação/Entrega)
+
+---
+
+### Documentação - Registro de Interação no Prompts Dev
+**Data:** 21 de Agosto de 2026, 16:25
+
+**Objetivo:**
+Registrar todas as interações do projeto final no log de prompts, separando do mini-projeto anterior.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Antes de qualquer commit, deve me pedir autorização. Note que em /docs/prompts, temos o arquivo prompts_dev.md, e nele tem todo historico de saida, entrada e padrao de prompt, da IA e do usuario. Quero que registre nossa interação para criar essas specs lá, quero que separe os logs anteriores para esses novos logs do projeto final"
+
+**Padrão de Prompting:** Constraint / Documentation-first
+> O usuário exigiu registro completo da interação antes de qualquer commit, com separação clara entre mini-projeto e projeto final.
+
+**Resultado e Ação (Saída da IA):**
+- Adição de separador visual "# PROJETO FINAL - M2.2" no prompts_dev.md
+- Registro de 8 interações detalhadas seguindo o template obrigatório (Data, Objetivo, Prompt, Padrão, Resultado)
+- Separadores claros entre cada interação
+- Nenhum commit realizado — aguardando autorização do usuário
+
+---
+
+### Documentação - Atualização dos Arquivos de Docs para Projeto Final
+**Data:** 21 de Agosto de 2026, 16:45
+
+**Objetivo:**
+Atualizar todos os arquivos de documentação existentes em /docs (architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md) para refletir a nova arquitetura do projeto final com API, UI, PostgreSQL, observabilidade, segurança e low-code.
+
+**Prompt Utilizado (Entrada do Usuário):**
+> "Ok, agora seguindo nessa mesma branch, vamos atualizar esses arquivos .md, architecture.md, langgraph.md, product.md, etc. Até pq estamos mudando a estrutura do projeto para a entrega final."
+
+**Padrão de Prompting:** Documentation Update / Architecture Alignment
+> O usuário solicitou a atualização de toda a documentação existente para alinhar com a nova arquitetura planejada para o projeto final, reconhecendo que a estrutura do projeto mudou significativamente.
+
+**Resultado e Ação (Saída da IA):**
+- Leitura de todos os arquivos de docs existentes: architecture.md, langgraph.md, state_schema.md, tools.md, tech.md, product.md, tasks.md, prompts.md, prompts_dev.md, task-completion.md, gitflow.md
+- Reescrita completa de **architecture.md**: de 4 camadas para 7 camadas (UI, API, Agente, Ferramentas, Persistencia, Observabilidade, Integracao Externa), com diagrama de fluxo atualizado incluindo paralelização e novos nos
+- Reescrita completa de **langgraph.md**: adicionados 3 novos nos (sanitize_inputs, load_history, request_approval), paralelização read_curriculum|read_job, checkpointer PostgresSaver, aresta condicional de aprovação
+- Reescrita completa de **state_schema.md**: novos campos do AgentState (history, approval_required, approval_decision, correlation_id, metadata), novos Pydantic schemas para API (AnalyzeRequest, AnalyzeResponse, HistoryItem, AnalysisRecord)
+- Reescrita completa de **tech.md**: stack atualizada (FastAPI, Streamlit, PostgreSQL, structlog, tenacity, langsmith, n8n), nova estrutura de diretorios completa, dependencias atualizadas
+- Reescrita completa de **product.md**: fluxos atualizados (CLI, Web, Low-Code), novas funcionalidades (seguranca, memoria, observabilidade, API), 2 cenarios documentados (principal + adversarial)
+- Atualização de **tasks.md**: blocos 1-8 mantidos como concluidos, blocos 9-18 adicionados com checklist detalhado e branches sugeridas
+- tools.md mantido sem alteracao significativa (as tools originais permanecem identicas)
+
+---
+
+### Implementacao - Bloco 9: Memoria e Checkpointer PostgreSQL
+**Data:** 21 de Agosto de 2026, 17:15
+
+**Objetivo:**
+Implementar persistencia de estado entre execucoes do agente LangGraph utilizando PostgreSQL como checkpointer. Criar novo no load_history, adicionar paralelizacao read_curriculum|read_job e configurar PostgresSaver.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "A partir da develop, inicie uma branch para comecarmos a spec 9_memory.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 09, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/09-memory-checkpoint` a partir de `develop`
+- Atualizacao de `graph/state.py`: adicionados campos `history`, `correlation_id`, `metadata` ao AgentState; criado modelo Pydantic `AnalysisRecord`
+- Criacao de `graph/checkpointer.py`: funcao `create_checkpointer()` configurada via `DATABASE_URL` do `.env`, usando `ConnectionPool` e `PostgresSaver`
+- Adicao do no `load_history` em `graph/nodes.py`: gera correlation_id unico, inicializa metadata basica (timestamp, modelo)
+- Reescrita de `graph/workflow.py`: paralelizacao read_curriculum|read_job via fan-out/fan-in, checkpointer condicional (ativa apenas se `DATABASE_URL` estiver definido), aresta pos-validacao agora vai para `load_history`
+- Atualizacao de `.env.example`: adicionada variavel `DATABASE_URL` e `GROQ_MODEL`
+- Atualizacao de `requirements.txt`: versoes atualizadas para langgraph 1.2.11, langgraph-checkpoint-postgres 3.1.2, langchain-core 1.6.0, psycopg 3.3.4
+- Instalacao de dependencias: `psycopg[pool]` e `langgraph-checkpoint-postgres` instalados com sucesso
+- Teste de compilacao: grafo compila sem erros
+- Teste de regressao: 6 testes unitarios existentes passando (test_nodes + test_tools)
+- Branch aguardando commit e PR
+
+---
+
+### Implementacao - Correcao de Formatacao CI (Black)
+**Data:** 21 de Agosto de 2026, 18:45
+
+**Objetivo:**
+Corrigir erros de formatacao detectados pelo CI (Black) no PR #28. Formatar arquivos `graph/checkpointer.py`, `graph/state.py` e `tests/test_checkpointer.py`.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, faça o commit, lembre de salvar os prompts"
+
+**Padrao de Prompting:** Fix / Formatting
+> O usuario pediu para corrigir o erro de formatacao do CI e registrar a interacao no prompts_dev.md.
+
+**Resultado e Acao (Saida da IA):**
+- Execucao de `black --check .` identificou 3 arquivos para formatar
+- Execucao de `black graph/checkpointer.py graph/state.py tests/test_checkpointer.py` reformata os 3 arquivos
+- Arquivos formatados: graph/checkpointer.py, graph/state.py, tests/test_checkpointer.py
+- 10 arquivos ja estavam formatados corretamente
+- CI deve passar agora com formatacao correta
+
+---
+
+### Implementacao - Correcao de Testes para CI (PostgreSQL indisponivel)
+**Data:** 21 de Agosto de 2026, 19:00
+
+**Objetivo:**
+Corrigir testes do checkpointer que falhavam no CI porque nao havia PostgreSQL disponivel. Adicionar skip condicional para testes que dependem de banco de dados.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok o CI deu erro novamente, mas acho que é por conta do Banco de dados"
+
+**Padrao de Prompting:** Fix / CI Compatibility
+> O usuario identificou que o CI falhou por falta de PostgreSQL e pediu correcao.
+
+**Resultado e Acao (Saida da IA):**
+- Identificado que test_checkpointer_creation, test_checkpointer_tables_created e test_checkpointer_config_structure falhavam com PoolTimeout
+- Criada funcao `is_postgres_available()` que tenta conectar com timeout de 3 segundos
+- Adicionado decorator `@requires_postgres` para pular testes quando PostgreSQL nao esta disponivel
+- test_checkpointer_none_without_database_url permanece sem skip (nao precisa de banco)
+- Testes agora passam no CI (7 passam, 2 pulados por falta de PostgreSQL)
+
+---
+
+### Implementacao - Bloco 10: API REST com FastAPI
+**Data:** 21 de Agosto de 2026, 19:30
+
+**Objetivo:**
+Implementar API REST completa para o agente de triagem com FastAPI, incluindo endpoints de analise, historico e saude.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Agora sim, pela develop, comece uma nova branch para trabalhamos na task 10_api.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 10, delegando toda a execucao tecnica a IA.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #28 (Bloco 9) na branch develop
+- Criacao da branch `feature/10-api` a partir de develop
+- Criacao da estrutura `api/` com os seguintes arquivos:
+  - `api/__init__.py`: modulo da API
+  - `api/schemas.py`: modelos Pydantic (AnalyzeRequest, AnalysisResult, BatchResult, HistoryResponse, HealthResponse, ErrorResponse)
+  - `api/dependencies.py`: RateLimiter (100 req/min), validacao de upload, lazy loading do grafo
+  - `api/main.py`: FastAPI app com endpoints:
+    - POST /analyze: analise individual curriculo x vaga
+    - POST /analyze/batch: analise em lote com ranking
+    - GET /history: historico paginado com filtros
+    - GET /history/{analysis_id}: detalhes de analise
+    - GET /health: health check com status do banco e LLM
+- CORS middleware configurado para Streamlit
+- Tratamento de erros padronizado com ErrorResponse
+- Atualizacao do requirements.txt: fastapi 0.115.12, uvicorn 0.34.3, python-multipart 0.0.20
+- Teste de importacao: API importa sem erros
+
+---
+
+### Implementacao - Documentacao da API no README.md
+**Data:** 21 de Agosto de 2026, 20:00
+
+**Objetivo:**
+Documentar endpoints da API REST no README.md na secao "Tool e Integracao", conforme criterio de aceite da Spec 10.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Mas faltou uma coisa no kanban, como voce abre o pr e fecha o card sem terminar tudo? Documentar endpoints no README.md (secao Tool e Integracao). Registre tudo em prompts"
+
+**Padrao de Prompting:** Process Correction / Documentation
+> O usuario identificou que o card foi fechado antes de completar todos os criterios de aceite. A IA corrigiu o erro, reabriu a issue e documentou os endpoints.
+
+**Resultado e Acao (Saida da IA):**
+- Reabertura da issue #30 no GitHub
+- Moveu card de volta para "In progress" no Kanban
+- Adicionou secao 9 "API REST (FastAPI)" no README.md com:
+  - 9.1: Instrucoes de execucao (uvicorn, documentacao Swagger)
+  - 9.2: Tabela de endpoints (5 endpoints documentados)
+  - 9.3: Exemplos de uso com curl
+  - 9.4: Informacoes de seguranca (rate limit, upload, CORS)
+- Atualizacao do prompts_dev.md com registro desta interacao
+
+---
+
+### Implementacao - Bloco 11: Interface Web com Streamlit
+**Data:** 21 de Agosto de 2026, 20:30
+
+**Objetivo:**
+Criar interface web com Streamlit para upload de curriculos e vagas, exibicao de resultados e comparacao de candidatos. Interface com 3 abas: Nova Analise, Historico e Comparar.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Pode seguir para a issues 11, specs 11_streamlit_ui.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 11, delegando toda a execucao tecnica a IA.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #39 (Bloco 10) na branch develop
+- Criacao da branch `feature/11-streamlit` a partir de develop
+- Criacao de `streamlit_app.py` com interface completa:
+  - **Aba 1 - Nova Analise:** upload PDF, campos de vaga, botao analisar, exibe relatorio com barra de progresso
+  - **Aba 2 - Historico:** tabela paginada com filtros por candidato e vaga, paginacao funcional
+  - **Aba 3 - Comparar:** upload multiplos PDFs, campos de vaga, botao comparar, ranking lado a lado
+- Tratamento de erros de conexao com API (mensagem amigavel)
+- Verificacao de saude do backend no carregamento
+- Atualizacao do requirements.txt: streamlit 1.45.1, requests 2.32.3
+
+---
+
+### Implementacao - Bloco 12: Seguranca, Governanca e Limites de Autonomia
+**Data:** 21 de Agosto de 2026, 21:15
+
+**Objetivo:**
+Implementar controles de seguranca, validacao rigorosa de entradas, sanitizacao contra prompt injection, aprovacao humana antes de acoes destrutivas e cenario adversarial demonstravel.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, agora sim pode comecar com a issue 12, spec 12_security.md"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 12, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #40 (Bloco 11) na branch develop
+- Criacao da branch `feature/12-security` a partir de develop
+- Criacao de `graph/security.py`:
+  - Funcao `sanitize_text()`: detecta e neutraliza padroes de prompt injection
+  - Funcao `detect_injection()`: verifica se texto contem injecoes
+  - Lista de 15+ padroes de injection conhecidos (ignore previous instructions, you are now, system:, <|im_start|>, score 100, etc.)
+- Atualizacao de `graph/nodes.py`:
+  - Adicionado no `sanitize_inputs`: sanitiza curriculo e descricao da vaga antes de enviar ao LLM
+  - Adicionado no `request_approval`: define `approval_required = True` no estado
+  - Import de `sanitize_text` de `graph/security.py`
+- Atualizacao de `graph/workflow.py`:
+  - No `sanitize_inputs` entre `validate_inputs` e `load_history`
+  - No `request_approval` entre `analyze_match` e `generate_report`
+  - Aresta condicional atualizada: `validate_inputs` -> `sanitize_inputs` (nao `load_history`)
+  - Docstring atualizado com nova estrutura do grafo
+- Atualizacao de `api/main.py`:
+  - Novo endpoint `POST /approve/{analysis_id}` para aprovacao humana
+  - Schema `ApprovalRequest` com campo `approved: bool`
+- Atualizacao de `streamlit_app.py`:
+  - Botoes "Aprovar Analise" e "Rejeitar Analise" apos exibir resultado
+  - Chamada a `POST /approve/{analysis_id}` com feedback ao usuario
+- Criacao de `tests/test_security.py`:
+  - 15 testes cobrindo sanitize_text, detect_injection e cenario adversarial
+  - Testes de injecao: ignore previous instructions, ignore all rules, you are now, system:, <|im_start|>, score 100
+  - Testes de preservacao de conteudo normal e PII
+  - Cenario adversarial completo validando que injection nao altera score
+- Atualizacao de `README.md`:
+  - Nova secao 11 "Seguranca e Autonomia" com 4 subsecoes
+  - Documentacao de sanitizacao anti-injection
+  - Documentacao de human-in-the-loop (aprovacao)
+  - Documentacao de cenario adversarial
+  - Documentacao de testes de seguranca
+- Todos os testes passando: 15 testes de seguranca + 15 testes de API + 4 testes de checkpointer + 3 testes de tools
+
+---
+
+### Implementacao - Bloco 13: Observabilidade e Resiliencia
+**Data:** 22 de Agosto de 2026, 17:20
+
+**Objetivo:**
+Implementar logs estruturados (structlog), traces (LangSmith), resiliencia (tenacity) e script de investigacao para observabilidade do agente.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Ok, a partir da Develop, siga com a implementacao dessa task, tanto no repo quanto no kanban"
+
+**Padrao de Prompting:** Task Execution / Delegation
+> O usuario autorizou a implementacao da Spec 13, delegando toda a execucao tecnica a IA seguindo a especificacao ja documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Merge do PR #41 (Bloco 12) na branch develop
+- Criacao da branch `feature/13-observability` a partir de develop
+- Atualizacao do Kanban: issue #33 movida para "In progress"
+- Criacao de `graph/observability.py`:
+  - Configuracao de structlog para logs JSON estruturados
+  - Funcoes helper: `get_logger()`, `log_node_start()`, `log_node_complete()`, `log_error()`, `log_llm_call()`
+  - Suporte a correlation_id para correlacao de execucoes
+- Criacao de `graph/resilience.py`:
+  - Wrapper `call_llm_with_retry()` com tenacity (3 tentativas, backoff exponencial)
+  - Funcao `call_llm_with_fallback()` com fallback para LLM local
+  - Tratamento de ConnectionError e TimeoutError
+- Atualizacao de `graph/nodes.py`:
+  - Todos os 9 nodes atualizados com logging estruturado
+  - Cada node loga inicio/fim com correlation_id, duracao e status
+  - Erros logados com `log_error()` incluindo tipo e mensagem
+- Criacao de `scripts/analyze_execution.py`:
+  - Funcao `load_logs()`: carrega logs JSONL de diretorio
+  - Funcao `filter_by_correlation_id()`: filtra por ID
+  - Funcao `analyze_execution()`: analisa execucao completa
+  - Funcao `generate_report()`: gera relatorio Markdown
+  - CLI: `--all` para listar execucoes, `<correlation_id>` para investigar
+- Atualizacao de `.gitignore`: adicionado `logs/`
+- Atualizacao de `.env.example`:
+  - `LANGCHAIN_TRACING_V2=true`
+  - `LANGCHAIN_API_KEY`
+  - `LANGCHAIN_PROJECT`
+  - `LOG_LEVEL`
+- Atualizacao de `README.md`:
+  - Nova secao 12 "Observabilidade e Resiliencia" com 4 subsecoes
+  - Documentacao de logs estruturados
+  - Documentacao de traces via LangSmith
+  - Documentacao de resiliencia com tenacity
+  - Documentacao do script de investigacao
+- Todos os testes passando: 37 testes (15 seguranca + 15 API + 4 checkpointer + 3 tools)
+
+---
+
+### Desenvolvimento - Spec 14 (QA com IA)
+**Data:** 22 de Agosto de 2026, 20:30
+
+**Objetivo:**
+Implementar a Spec 14 (QA com IA) do projeto final, incluindo matriz de risco, plano de testes, code review por IA, testes de integracao e testes E2E.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> Solicitacao para continuar a implementacao da Spec 14 a partir do ponto onde o usuario parou (docs/qa ja criados, testes ainda nao criados).
+
+**Padrao de Prompting:** Task-oriented
+> Direcionou a IA a completar os testes de integracao e E2E, atualizar README, e preparar para commit.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao de `tests/test_integration.py`:
+  - 12 testes de integracao com LLM mockada
+  - Testes de validacao de inputs (PDF invalido, vaga inexistente)
+  - Testes de sanitizacao de inputs (texto limpo e com injection)
+  - Testes de load_history (correlation_id unico)
+  - Testes de request_approval e generate_report
+  - Mock de LLM com RunnableLambda para extract_information e analyze_match
+  - Mock de save_report com patch
+- Criacao de `tests/test_e2e.py`:
+  - 11 testes E2E via FastAPI TestClient
+  - Testes de health check (200, JSON)
+  - Testes de analise (validacao de campos obrigatorios, rejeicao de nao-PDF)
+  - Testes de batch (validacao de curriculos)
+  - Testes de historico (200, paginacao, filtros)
+  - Testes de detalhes (404 para ID inexistente)
+- Atualizacao de `README.md`:
+  - Nova secao 13 "QA com IA (Spec 14)" com 4 subsecoes
+  - Estrategia de testes
+  - Matriz de risco
+  - Cobertura de testes (85 testes)
+  - Comandos uteis
+- Todos os testes passando: 85 testes (15 security + 15 API + 4 checkpointer + 3 tools + 26 observability + 12 integration + 11 e2e)
+- Black formatting aplicado
+
+---
+
+### Desenvolvimento - Spec 15 (DevOps e CI/CD)
+**Data:** 22 de Agosto de 2026, 18:00
+
+**Objetivo:**
+Implementar pipeline CI/CD aprimorado com GitHub Actions, Docker, analise de logs com IA e deteccao de anomalias.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Siga para a spec 15_devops.md e task bloco 15 do kanban"
+
+**Padrao de Prompting:** Task Execution
+> O usuario autorizou a implementacao da Spec 15 seguindo a especificacao documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/15-devops-anomaly` a partir de develop
+- Atualizacao de `.github/workflows/ci.yml`:
+  - Jobs separados: lint, typecheck, test-unit, test-integration, test-api, test-e2e, docker-build
+  - Dependencias configuradas para paralelismo
+  - Docker build apenas apos todos os testes passarem
+- Criacao de `Dockerfile`:
+  - Base python:3.12-slim
+  - Cache de dependencias via requirements.txt
+  - Exposicao da porta 8000
+  - Comando padrao: uvicorn
+- Criacao de `scripts/analyze_ci_logs.py`:
+  - Funcao `load_ci_logs()`: carrega logs JSONL
+  - Funcao `generate_demo_logs()`: gera logs simulados
+  - Funcao `analyze_logs()`: analisa etapas e identifica problemas
+  - Funcao `generate_report()`: gera relatorio Markdown
+  - CLI: `--demo` para logs simulados
+- Criacao de `scripts/detect_anomaly.py`:
+  - Funcao `generate_simulated_metrics()`: gera metricas simuladas
+  - Funcao `calculate_moving_average()`: media movel
+  - Funcao `detect_anomalies()`: deteccao por threshold (2σ)
+  - Funcao `estimate_trend()`: regressao linear simples
+  - Funcao `generate_report()`: gera relatorio com recomendacoes
+- Geracao de `docs/evidencias/ci_log_analysis.md` (logs simulados)
+- Geracao de `docs/evidencias/anomaly_report.md` (metricas simuladas)
+- Atualizacao de `README.md`:
+  - Nova secao 14 "DevOps e CI/CD (Spec 15)" com 5 subsecoes
+  - Pipeline CI/CD
+  - Docker
+  - Analise de logs com IA
+  - Deteccao de anomalias
+  - Evidencias
+
+---
+
+### Desenvolvimento - Spec 16 (Low-Code com n8n)
+**Data:** 22 de Agosto de 2026, 18:30
+
+**Objetivo:**
+Implementar automacao low-code com n8n para integrar o agente CurriculoMatch com workflows de email, webhook e Slack.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Vamos seguir para a spec 16_devops.md e task bloco 16 do kanban"
+
+**Padrao de Prompting:** Task Execution
+> O usuario autorizou a implementacao da Spec 16 seguindo a especificacao documentada.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/16-lowcode-n8n` a partir de develop
+- Criacao de `lowcode/docker-compose.n8n.yml`:
+  - Servico n8n com imagen n8nio/n8n:latest
+  - Porta 5678 exposta
+  - Credenciais basicas (admin/curriculomatch)
+  - Volumes para dados e pastas input/output
+- Criacao de `lowcode/n8n_workflow.json`:
+  - Workflow "CurriculoMatch - Analise Automatica"
+  - 6 nodes: Webhook Trigger, Chama API, Verifica Score, Slack Aprovado, Slack Rejeitado, Responder Webhook
+  - Logica de decisao: score >= 70 = aprovado
+  - Integracao com Slack via API
+- Criacao de `docs/lowcode/reproduction_guide.md`:
+  - Instrucoes de instalacao (Docker Compose e Docker Run)
+  - Instrucoes de importacao do workflow
+  - Configuracao de credenciais
+  - Instrucoes de teste
+  - Solucao de problemas
+- Atualizacao de `README.md`:
+  - Nova secao 15 "Automacao Low-Code (n8n)" com 6 subsecoes
+  - Visao geral
+  - Fluxo principal
+  - Instalacao rapida
+  - Workflow
+  - Teste
+  - Documentacao
+
+---
+
+### Correcao - Endpoint /history vazio (3 bugs)
+**Data:** 22 de Agosto de 2026, 23:10
+
+**Objetivo:**
+Corrigir o endpoint GET /history que retornava `{"items":[],"total":0}` apesar de existirem 77 checkpoints no PostgreSQL.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "O que fizemos ate agora?" (continuacao de trabalho anterior com bug no history)
+
+**Padrao de Prompting:** Systematic debugging
+> Investigacao sistematica: (1) query direta ao DB retorna 9 threads, (2) API retorna vazio sem erro, (3) verificacao de .pyc cache, (4) endpoint debug criado para diagnóstico.
+
+**Resultado e Acao (Saida da IA):**
+- **Bug 1 - Type mismatch:** O endpoint criava objetos `AnalysisResult` (com campos extras `report`, `status`) mas `HistoryResponse` esperava `HistoryItem` (sem esses campos). Pydantic rejeitava silenciosamente.
+  - Correcao: Trocar `AnalysisResult` por `HistoryItem` na construcao dos items
+- **Bug 2 - Import faltando:** `HistoryItem` nao estava no import de `api.schemas`
+  - Correcao: Adicionar `HistoryItem` ao import
+- **Bug 3 - Variavel anterior a definicao:** `report` era usada na regex de extracao de nome antes de ser definida (linha 274 vs 287)
+  - Correcao: Reordenar atribuicoes (score, report, created antes de candidate)
+- **Melhoria - Extracao de nome:** Candidato nao existia em `channel_values`, apenas no texto do report
+  - Correcao: Regex `Compatibilidade:\s*(.+?)\s+vs` extrai nome do report, com `.strip("*")` para remover markdown bold
+- **Melhoria - Titulo da vaga:** Usava `job_description[:50]` como fallback
+  - Correcao: Tenta `extracted_information.vaga.cargo` primeiro
+- **Limpeza:** Removido endpoint temporario `/debug/db`, imports inline movidos para topo do arquivo, variavel `is_valid` removida ( nao utilizada apos troca de tipo)
+- Arquivos alterados: `api/main.py`
+- 15/15 testes API passam, ruff lint clean
+
+---
+
+### Nova Funcionalidade - Script run.py (Launcher)
+**Data:** 22 de Agosto de 2026, 23:25
+
+**Objetivo:**
+Criar unico comando para iniciar API + Streamlit simultaneamente usando ambiente virtual.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Quero uma funcao para iniciar a api e a web ao mesmo tempo, pode ser usando o ambiente virtual"
+
+**Padrao de Prompting:** Direct request
+> Requisito direto com restricao clara (usar venv).
+
+**Resultado e Acao (Saida da IA):**
+- Criacao de `run.py` com as seguintes funcionalidades:
+  - `python run.py` — inicia API (porta 8001) + Streamlit (porta 8501)
+  - `python run.py --api-only` — somente API
+  - `python run.py --web-only` — somente Streamlit
+  - `python run.py --install` — apenas instala dependencias
+- Cria `.venv` automaticamente se nao existir
+- Instala `requirements.txt` se faltarem pacotes (detecta via import test)
+- Processos filhos com `CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW` (Windows)
+- `Ctrl+C` encerra ambos graceful (SIGTERM com timeout, fallback para kill)
+- Loop de monitoramento detecta crash e encerra os demais
+- Arquivos removidos: `run.bat`, `run.sh` (substituidos por run.py)
+- Ruff lint clean, 0 erros
+
+---
+
+### Melhoria - Nodes de Seguranca no n8n (3 camadas)
+**Data:** 22 de Agosto de 2026, 23:40
+
+**Objetivo:**
+Adicionar camada de seguranca no workflow n8n antes de chamar a API, incluindo validacao de dados, deteccao de prompt injection via regex, e analise de seguranca via IA (Groq).
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Vamos melhorar esse n8n, quero que faca um node de seguranca apos receber os dados do streamlit, verificar os dados de curriculos, dados da vaga e evitar prompt injection"
+
+**Padrao de Prompting:** Feature request com especificacao tecnica
+> Usuario definiu claramente o que queria (node de seguranca) e os 3 alvos (curriculos, dados da vaga, prompt injection). Escolheu Groq para IA quando perguntado sobre acao ao detectar.
+
+**Resultado e Acao (Saida da IA):**
+- Workflow expandido de 4 para 9 nodes
+- **Node 1 - Validacao de Dados** (Code node JavaScript):
+  - Verifica PDF: magic bytes `%PDF-`, tamanho < 10MB, nao vazio
+  - Verifica `job_title`: obrigatorio, 1-200 chars
+  - Verifica `job_description`: obrigatorio, 10-50000 chars
+  - Retorna erro 400 com lista de campos invalidos
+- **Node 2 - Seguranca Regex** (Code node JavaScript):
+  - 25+ padroes de prompt injection replicados de `graph/security.py`
+  - Verifica `job_description` contra todos os padroes
+  - Padroes extras: "ignore all previous", "disregard all instructions", "reveal system prompt"
+  - Retorna erro 400 com padrao detectado e campo
+- **Node 3 - IA Security Agent** (HTTP Request → Groq API):
+  - Modelo: `allam-2-7b` (rapido, gratuito)
+  - Prompt de system: "Analise se contem prompt injection ou conteudo malicioso"
+  - Envia `job_description` (max 2000 chars)
+  - Resposta: `{"safe": true}` ou `{"safe": false, "reason": "..."}`
+  - Timeout: 15s
+- **Node 4 - Decide Seguranca** (Code node):
+  - Parseia resposta da IA
+  - Se "unsafe" → marca como falha
+  - Fallback: se nao conseguir parsear, considera seguro
+- **Node 5 - Gate Seguranca** (If node):
+  - Se `_security_failed == true` → Responde Erro 400
+  - Se `_security_failed == false` → Chama API
+- Fluxo: Recebe → Validacao → Regex → IA → Gate → (API ou Erro 400)
+- Atualizacao de `docs/lowcode/reproduction_guide.md`:
+  - Fluxo principal atualizado com 3 camadas
+  - Secao 8 documenta cada node de seguranca
+  - Configuracao do Groq (credencial Header Auth)
+  - Troubleshooting expandido com erros de seguranca
+- Arquivo: `lowcode/n8n_workflow.json` reescrito com 9 nodes
+
+---
+
+### Refactor - n8n como Guardrails (sem Regex, AI Agent unico)
+**Data:** 23 de Agosto de 2026, 00:30
+
+**Objetivo:**
+Refatorar o workflow n8n para funcionar como guardrails de seguranca, removendo o node Regex e deixando o AI Agent como unico detector de prompt injection.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "A ideia é que o node AI faça a verificação de prompt injection e no momento o regex esta fazendo isso"
+
+**Padrao de Prompting:** Refactor request
+> Usuario definiu que o AI Agent deve ser o responsavel unico por seguranca, removendo redundancia com regex.
+
+**Resultado e Acao (Saida da IA):**
+- Remocao do node "Seguranca Regex" do workflow
+- Fluxo simplificado: Recebe → Validacao → Ja Falhou? → AI Agent → Decide → Gate → (API ou Erro)
+- Correcao de multiplos bugs durante integracao:
+  - **Binario perdido:** AI Agent nao preserva binario do PDF. Solucao: passar `binary: $input.first().binary` nos Code nodes e buscar dados de `$('Validacao de Dados').first()`
+  - **Gate Seguranca com AND impossivel:** Condicoes true AND false nunca atendiam. Solucao: usar apenas `is true`
+  - **Ja Falhou? com OR redundante:** OR com true e false sempre ia para True. Solucao: usar apenas `is true`
+  - **AI Agent sem chatInput:** Precisou configurar "Source for Prompt" como "Define below" no n8n
+  - **Decide Seguranca sem binario:** Adicionado `binary: $('Validacao de Dados').first().binary` no return
+- System message do AI Agent otimizado para deteccao de injection
+- Atualizacao de `README.md` (secao 15: Guardrails n8n)
+- Atualizacao de `docs/lowcode/reproduction_guide.md`:
+  - Fluxo atualizado sem regex
+  - Troubleshooting com erros de binario
+  - Teste de prompt injection incluido
+- Arquivo: `lowcode/n8n_workflow.json` reescrito com 8 nodes
+
+---
+
+### Spec 17 - Historico para o Agente
+**Data:** 27 de Agosto de 2026
+
+**Objetivo:**
+Dar ao agente IA acesso a analises anteriores similares para comparar resultados, manter consistencia e referenciar avaliacoes passadas.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Eu quero que a analise retorne de qualquer maneira a comparacao, nao esta retornando"
+> "mesmo curriculo, vaga e descricao, e mesmo assim nao tem resquicio de memoria"
+
+**Padrao de Prompting:** Bug fix + Feature request
+> Usuario identificou que o historico nao estava sendo exibido nos relatorios e solicitou correcao.
+
+**Resultado e Acao (Saida da IA):**
+
+**Bugs encontrados e corrigidos:**
+
+1. **`load_history` executava antes de `extract_information`**: O nó `load_history` rodava antes do `extract_information`, entao `candidate_name` e `job_title` estavam vazios. **Correcao:** Remover nó `load_history` do workflow e buscar historico diretamente no `analyze_match` (que ja tem `extracted_information`).
+
+2. **`DATABASE_URL` nao disponivel**: `os.getenv("DATABASE_URL")` retornava `None` porque `load_dotenv()` nao era chamado no modulo. **Correcao:** Adicionar `load_dotenv()` em `graph/history_query.py`.
+
+3. **`extracted_information` nao esta em `channel_values`**: O LangGraph checkpointer armazena `extracted_information` em `checkpoint_blobs` (formato msgpack), nao em `channel_values`. **Correcao:** Extrair candidato e cargo do `report` (que esta em `channel_values`) usando regex: `r"Compatibilidade:\s*(.+?)\s+vs\s+(.+?)(?:\n|$)"`.
+
+4. **Prompt sem variavel `history_context`**: O `ANALYZE_PROMPT` nao tinha a variavel `{history_context}`. **Correcao:** Adicionar `{history_context}` ao system prompt e `{history_instruction}` ao user prompt.
+
+5. **LLM nao incluia secao de historico**: Mesmo com historico no prompt, o LLM nao gerava a secao. **Correcao:** Adicionar instrucao explicita no prompt: "Secao 5. Historico de Analises Similares" obrigatoria quando ha historico.
+
+**Arquivos modificados:**
+- `graph/history_query.py` (novo): query compartilhada de analises similares
+- `graph/nodes.py`: `analyze_match` busca historico e passa para LLM
+- `graph/workflow.py`: removido nó `load_history`
+- `prompts/analyze_prompt.py`: secao `## 5. Historico de Analises Similares`
+- `tests/test_history_query.py` (novo): 6 testes unitarios
+
+**Commits:**
+- `858a616` feat(history): agente acessa analises anteriores similares via PostgreSQL
+
+---
+
+### Correcao: Estabilidade do Fluxo Principal (Specs 16-17)
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Corrigir falhas no fluxo de analise (single e batch) causadas pelas mudancas dos Specs 16 (n8n guardrails) e 17 (historico).
+
+**Contexto:**
+Apos implementar o fluxo via n8n, o endpoint `/analyze/batch` retornava `results: []` e o endpoint `/analyze` retornava `extracted_information ausente`. Apos investigacao, foram encontrados 3 problemas encadeados:
+
+**Problemas encontrados e corrigidos:**
+
+1. **Modelo Groq `openai/gpt-oss-120b` com rate limit (429)**: O modelo atingiu o limite de tokens diarios (200k TPD). **Correcao:** Trocar para `qwen/qwen3.8-27b` (mais leve, suporta structured output).
+
+2. **`analyze_injection` quebrando o fan-in do LangGraph**: O no `analyze_injection` (LLM-based) retornava `state` (dict completo) ao inves de `{}`, causando conflito com outros nos paralelos no LangGraph. Alem disso, o modelo menor (`llama-3.1-8b-instant`, que nao existe no Groq) nao suportava `with_structured_output`. **Decisao:** Reverter a implementacao do `analyze_injection` (remover do workflow e nodes.py). A deteccao de injection continua sendo feita pelo regex em `sanitize_inputs` (PT+EN).
+
+3. **`INVALID_CONCURRENT_GRAPH_UPDATE`**: Os nos `read_curriculum` e `read_job` retornavam `{"is_valid": False, "error_message": ...}` em paralelo, conflitando na chave `is_valid`. **Correcao:** Remover `is_valid` dos returns de erro, usar apenas `error_message`. O `route_after_read` checa apenas `error_message`.
+
+**Arquivos modificados:**
+- `graph/workflow.py`: removido no `analyze_injection` e suas arestas
+- `graph/nodes.py`: removido `analyze_injection` e `INJECTION_CHECK_PROMPT`; corrigido return de erro em `read_curriculum_node` e `read_job_node`
+- `.env`: `GROQ_MODEL=qwen/qwen3.8-27b`
+- `.env.example`: adicionado `N8N_WEBHOOK_URL`, `N8N_BATCH_WEBHOOK_URL`, removido `API_URL`
+- `api/main.py`: `validate_file_upload` dentro de try/except no batch
+
+**Commits:**
+- `fix: remover analyze_injection do workflow, corrigir concurrent update, trocar modelo Groq`
+
+---
+
+### Implementacao - Spec 18 (Documentacao e Entrega)
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Implementar toda a documentacao do projeto para entrega final: README completo (11 secoes), CONTRIBUTING.md, CHANGELOG.md, diagrama de arquitetura Mermaid, design-decisions.md, release-notes, system_prompts.md, reproduction_guide, docker-compose.yml completo e evidencias de QA.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed."
+
+**Padrao de Prompting:** Delegation / Continuation
+> Usuario autorizou a continuacao do trabalho de documentacao sem restricoes especificas.
+
+**Resultado e Acao (Saida da IA):**
+- Criacao da branch `feature/18-documentation` a partir de `develop`
+- Criacao de `README.md` completo com 11 secoes (1. Descricao, 2. Classificacao, 3. Tool, 4. Contexto, 5. Seguranca, 6. Pre-requisitos, 7. Instalacao, 8. QA, 9. Low-Code, 10. Cenarios, 11. Analise Critica)
+- Criacao de `CONTRIBUTING.md` com setup, commits, PRs, testes e Docker
+- Criacao de `CHANGELOG.md` com historico v0.1.0 a v1.0.0
+- Criacao de `docker-compose.yml` completo (API + Streamlit + PostgreSQL + n8n)
+- Criacao de `docs/architecture/diagram.mmd` (diagrama Mermaid)
+- Criacao de `docs/design-decisions.md` (12 decisoes documentadas)
+- Criacao de `docs/release-notes-v1.0.0.md`
+- Criacao de `docs/prompts/system_prompts.md` (prompts consolidados)
+- Criacao de `docs/lowcode/reproduction_guide.md` (guia de reproducao n8n)
+- Atualizacao de `docs/prompts/refinement_log.md` (ciclo 1)
+- Atualizacao de `docs/prompts/prompts_dev.md` (interacoes do projeto final)
+- PR #50 aberto e aguardando merge
+
+---
+
+### Correcao - Criacao de Banco de Dados na Documentacao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar instrucao de criacao do banco de dados `curriculomatch` nas Opcoes 2 e 3 do README, ja que o `PostgresSaver` so cria tabelas e nao o banco em si.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Isso esta na documentacao?"
+
+**Padrao de Prompting:** Validation / Documentation gap
+> Usuario identificou que a instrucao de criacao do banco nao estava documentada nas opcoes de instalacao.
+
+**Resultado e Acao (Saida da IA):**
+- Adicionado `psql -U postgres -c "CREATE DATABASE curriculomatch;"` nas Opcoes 2 e 3 do README
+- Nota: Opcao 1 (Docker Compose) ja cria o banco automaticamente via `POSTGRES_DB`
+
+---
+
+### Documentacao - Pre-requisitos e Numeracao
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Adicionar secao de pre-requisitos ao README e corrigir numeracao das secoes. Atualizar CONTRIBUTING.md removendo "opcional" de PostgreSQL e Docker.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Os requisitos dizem que deve ter python, postgres e docker? Alem do n8n que instalara no docker"
+
+**Padrao de Prompting:** Documentation alignment
+> Usuario questionou se os pre-requisitos estavam claros na documentacao.
+
+**Resultado e Acao (Saida da IA):**
+- Criada secao "6. Pre-requisitos" no README com Python 3.12+, PostgreSQL 15+, Docker + Docker Compose e Git
+- Renumeradas secoes 6-10 para 7-11 no README
+- Atualizado CONTRIBUTING.md: removido "(opcional, para checkpointer)" de PostgreSQL e "(opcional, para n8n)" de Docker
+
+---
+
+### Melhoria - Instrucoes de Instalacao n8n no README
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Expandir a Opcao 3 do README com passos claros de configuracao do n8n apos a inicializacao, incluindo importacao do workflow, configuracao de credenciais e ativacao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Nao, quero que a documentacao fique facil de entender, deve ter referencias no passo a passo para essa instalacao"
+
+**Padrao de Prompting:** Documentation improvement
+> Usuario identificou que a instalacao manual nao explicava os passos de configuracao do n8n, tornando difcil para novo usuario.
+
+**Resultado e Acao (Saida da IA):**
+- Expandida Opcao 3 do README com pos-instalacao do n8n (5 passos)
+- Corrigido comando `psql` para `docker exec -i postgres psql` (compatibilidade com Docker)
+- Removido "opcional" do n8n (Streamlit depende dele)
+- Melhorada secao "Configuracao do n8n" com tabela de passos
+
+---
+
+### Correcao - Versao do n8n para Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Corrigir problema de autenticacao no n8n. Versoes recentes (1.52.0, 1.112.4) exigem setup de owner account, tornando a instalacao complexa.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "Entrou e me levou para /setup"
+> "quero simples, um login rapido no n8n"
+
+**Padrao de Prompting:** Usability / DX
+> Usuario queria login simples e rapido, sem wizard de configuracao.
+
+**Resultado e Acao (Saida da IA):**
+- Testadas versoes 1.112.4 e 1.52.0 (ambas exigem /setup)
+- Solucao: fixar n8n na versao 0.236.0 (suporta basic auth direto)
+- docker-compose.n8n.yml atualizado com `n8nio/n8n:0.236.0`
+- Login funciona com admin/curriculomatch sem wizard
+
+---
+
+### Correcao - n8n Latest com Login Simples
+**Data:** 29 de Agosto de 2026
+
+**Objetivo:**
+Usar versao latest do n8n com login simples, sem wizard de configuracao.
+
+**Prompt Utilizado (Entrada do Usuario):**
+> "nao, use a versao mais recente do n8n"
+
+**Padrao de Prompting:** Direct request
+> Usuario insistiu em usar a versao latest, nao quer versao antiga.
+
+**Resultado e Acao (Saida da IA):**
+- Container com `n8nio/n8n:latest` (1.112.4)
+- Adicionado `N8N_USER_MANAGEMENT_DISABLED=true` ao environment
+- Variavel desabilita o wizard de setup e permite basic auth direto
+- docker-compose.n8n.yml atualizado com latest + variavel de desabilitacao

@@ -23,7 +23,12 @@ Instruções para o formato OBRIGATÓRIO da sua resposta:
 
 ## 4. Resenha Final
 - Escreva um parágrafo resumindo a adequação do candidato e dê sua recomendação final (Avança ou Não avança).
-""",
+
+## 5. Histórico de Análises Similares
+- Se houver análises anteriores similares listadas abaixo, compare o score atual com os anteriores e destaque diferenças ou padrões.
+- Se NÃO houver análises anteriores (seção vazia), NÃO inclua esta seção no relatório.
+
+{history_context}""",
         ),
         (
             "user",
@@ -35,7 +40,9 @@ Candidato:
 Vaga:
 {vaga_data}
 
-Faça a análise cruzada completa baseando-se EXCLUSIVAMENTE nos dados acima e responda APENAS com o relatório Markdown formatado.""",
+{history_instruction}
+
+Faça a análise cruzada completa baseando-se nos dados acima e responda APENAS com o relatório Markdown formatado.""",
         ),
     ]
 )

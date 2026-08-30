@@ -28,4 +28,4 @@ def read_job(file_path: str) -> str:
             with open(file_path, "r", encoding="cp1252") as file:
                 return file.read()
         except Exception as e:
-            raise ValueError(f"Erro de encoding ao ler o arquivo {file_path}: {str(e)}")
+            raise ValueError(f"Erro de encoding ao ler o arquivo {file_path}: {e!s}")
