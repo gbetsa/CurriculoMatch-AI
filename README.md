@@ -461,4 +461,4 @@ Link para video de demonstracao (https://youtu.be/PN9TDzbBO_E)
 
 ---
 
-**Projeto Avaliativo Modulo 2** | **Nota: 10/10**
+**Projeto Avaliativo Modulo 2**
